@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "digifi"
+version = "1.0.0"
+authors = [
+    { name="Rem Sadykhov", email="rsadykhov@gmail.com" },
+]
+description = "A package with common financial functions and utilities."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Licence :: OSI Approved :: MIT Licence",
+    "Operatring System :: OS Independent",
+    "Natural Language :: English",
+    "Development Status :: 1-Planning"
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "plotly>=5.15"
+]
+
+# TODO: Add links to a repo
+# [project.urls]
+# "Homepage" = "github_url"
+# "Bug Tracker" = "github_url/issues"
