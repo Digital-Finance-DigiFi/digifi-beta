@@ -1,7 +1,5 @@
 from typing import Union
 import numpy as np
-import pandas as pd
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from src.digifi.utilities.general_utils import compare_array_len
 from src.digifi.technical_indicators.technical_indicators import (sma, ema, macd, bollinger_bands, rsi, adx)

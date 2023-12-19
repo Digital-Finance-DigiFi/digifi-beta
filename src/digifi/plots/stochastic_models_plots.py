@@ -7,7 +7,9 @@ import plotly.express as px
 
 
 def plot_stochastic_paths(paths: np.ndarray, expected_path: Union[np.ndarray, None]=None, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """Plot of the random paths taken by a stochastic process."""
+        """
+        Plot of the random paths taken by a stochastic process.
+        """
         plotting_df = pd.DataFrame(paths)
         if isinstance(expected_path, np.ndarray):
             if len(expected_path)!=len(plotting_df):

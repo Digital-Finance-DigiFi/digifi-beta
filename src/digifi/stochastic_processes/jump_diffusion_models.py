@@ -7,10 +7,12 @@ from src.digifi.plots.stochastic_models_plots import plot_stochastic_paths
 
 
 class MertonJumpDiffusionProcess(StochasticProcessInterface):
-    """S = (mu-0.5*sigma^2)*t + sigma*W(t) + sum_{i=1}^{N(t)} Z_i
-    Model describes stock price with continuous movement that have rare large jumps."""
-    def __init__(self, mu_s: float, sigma_s: float, mu_j: float, sigma_j: float, lambda_j: float, n_paths: int, n_steps: int, T: float,
-                 s_0: float) -> None:
+    """
+    S = (mu-0.5*sigma^2)*t + sigma*W(t) + sum_{i=1}^{N(t)} Z_{i}
+    Model describes stock price with continuous movement that have rare large jumps.
+    """
+    def __init__(self, mu_s: float=0.2, sigma_s: float=0.3, mu_j: float=-0.1, sigma_j: float=0.15, lambda_j: float=0.5, n_paths: int=100,
+                 n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu_s = float(mu_s)
         self.sigma_s = float(sigma_s)
         self.mu_j = float(mu_j)
@@ -24,7 +26,9 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
         self.s_0 = float(s_0)
     
     def get_paths(self) -> np.ndarray:
-        """Paths, S, of the Merton Jump-Diffusion Process."""
+        """
+        Paths, S, of the Merton Jump-Diffusion Process.
+        """
         # Stochastic process
         dX = (self.mu_s-0.5*self.sigma_s**2)*self.dt + self.sigma_s*np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
         dP = np.random.poisson(self.lambda_j*self.dt, (self.n_steps, self.n_paths))
@@ -36,15 +40,21 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
         return np.cumsum(dS, axis=0)
     
     def get_expectation(self) -> np.ndarray:
-        """Expected path, E[S], of the Merton Jump-Diffusion Process."""
+        """
+        Expected path, E[S], of the Merton Jump-Diffusion Process.
+        """
         return (self.mu_s+self.lambda_j*self.mu_j)*self.t+self.s_0
     
     def get_variance(self) -> np.ndarray:
-        """Variance, Var[S], of the Merton Jump-Diffusion Process."""
+        """
+        Variance, Var[S], of the Merton Jump-Diffusion Process.
+        """
         return (self.mu_s**2+self.lambda_j*(self.mu_j**2+self.sigma_j**2))*self.t
     
     def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[np.ndarray, None]:
-        """Plot of the random paths taken by the Merton Jump-Diffusion Process."""
+        """
+        Plot of the random paths taken by the Merton Jump-Diffusion Process.
+        """
         expected_path = None
         if plot_expected:
             expected_path = self.get_expectation()
@@ -53,11 +63,13 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
 
 
 class KouJumpDiffusionProcess(StochasticProcessInterface):
-    """S = mu*t +sigma*W(t) + sum_{i=1}^{N(t)} Z_i
+    """
+    S = mu*t +sigma*W(t) + sum_{i=1}^{N(t)} Z_{i}
     Model describes stock price with continuous movement that have rare large jumps, with the jump sizes following a double 
-    exponential distribution."""
-    def __init__(self, mu: float, sigma: float, lambda_n: float, eta_1: float, eta_2: float, p: float, n_paths: int, n_steps: int,
-                 T: float, s_0: float) -> None:
+    exponential distribution.
+    """
+    def __init__(self, mu: float=0.2, sigma: float=0.3, lambda_n: float=0.5, eta_1: float=9.0, eta_2: float=5.0, p: float=0.5,
+                 n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu = float(mu)
         self.sigma = float(sigma)
         self.lambda_n = float(lambda_n)
@@ -72,7 +84,9 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
         self.s_0 = float(s_0)
     
     def get_paths(self) -> np.ndarray:
-        """Returns the paths, S, for the Kou Jump-Diffusion Process"""
+        """
+        Paths, S, of the Kou Jump-Diffusion Process.
+        """
         # Stochstic process
         dX = (self.mu-0.5*self.sigma**2)*self.dt + self.sigma*np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
         dP = np.random.poisson(self.lambda_n*self.dt, (self.n_steps, self.n_paths))
@@ -92,15 +106,21 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
         return np.cumsum(dS, axis=0)
     
     def get_expectation(self) -> np.ndarray:
-        """Expected path, E[S], of the Kou Jump-Diffusion Process."""
+        """
+        Expected path, E[S], of the Kou Jump-Diffusion Process.
+        """
         return (self.mu + self.lambda_n*(self.p/self.eta_1-(1-self.p)/self.eta_2))*self.t + self.s_0
     
     def get_variance(self) -> np.ndarray:
-        """Variance, Var[S], of the Kou Jump-Diffusion Process."""
+        """
+        Variance, Var[S], of the Kou Jump-Diffusion Process.
+        """
         return (self.sigma**2 + 2*self.lambda_n*(self.p/(self.eta_1**2)+(1-self.p)/(self.eta_2**2)))*self.t
     
     def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """Plot of the random paths taken by the Kou Jump-Diffusion Process."""
+        """
+        Plot of the random paths taken by the Kou Jump-Diffusion Process.
+        """
         expected_path = None
         if plot_expected:
             expected_path = self.get_expectation()

@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
 
 
 
+@dataclass
 class ForwardRateAgreementStruct(FinancialInstrumentStruct):
     fixed_rate: float
     forward_rate: float

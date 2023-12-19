@@ -1,4 +1,7 @@
+# TODO: Add references of algorithms to doctrings (Wikipedia reference is applicable, Original Source reference if applicable)
 # Utilities
+
+from .utilities.maths_utils import (factorial, n_choose_r)
 
 from .utilities.time_value_utils import (CompoundingType, Cashflow, present_value, net_present_value, future_value,
                                          ptp_compounding_transformation, ptc_compounding_transformation, ctp_compounding_transformation,
@@ -36,7 +39,37 @@ from .stochastic_processes.jump_diffusion_models import (MertonJumpDiffusionProc
 
 # Technical indicators
 
-# from .technical_indicators import (ema, sma, macd, bollinger_bands, rsi, adx)
+from .technical_indicators.technical_indicators import (ema, sma, macd, bollinger_bands, rsi, adx, obv)
+
+# Probability distributions
+
+from .probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionStruct,
+                                                ProbabilityDistributionInterface)
+
+from .probability_distributions.discrete_probability_distributions import (BernoulliDistribution, BinomialDistribution,
+                                                                           DiscreteUniformDistribution, PoissonDistribution)
+
+from .probability_distributions.continuous_probability_distributions import (ContinuousUniformDistribution, NormalDistribution,
+                                                                             ExponentialDistribution, LaplaceDistribution)
+
+# Pseudo-random generators
+
+from .pseudo_random_generators.general import (PseudoRandomGeneratorInterface)
+
+from .pseudo_random_generators.generator_algorithms import (accept_reject_method, inverse_transformation_method, box_muller_algorithm,
+                                                            marsaglia_method, ziggurat_algorithm)
+
+from .pseudo_random_generators.uniform_distribution_generators import (LinearCongruentialPseudoRandomNumberGenerator,
+                                                                       FibonacciPseudoRandomNumberGenerator)
+
+from .pseudo_random_generators.standard_normal_distribution_generators import (StandardNormalAcceptRejectPseudoRandomNumberGenerator,
+                                                                               StandardNormalBoxMullerAlgorithmPseudoRandomNumberGenerator,
+                                                                               StandardNormalMarsagliaMethodPseudoRandomNumberGenerator,
+                                                                               StandardNormalZigguratAlgorithmPseudoRandomNumberGenerator)
+
+# Market making
+
+from .market_making.order_book import (volume_imbalance)
 
 # Plots
 
@@ -45,3 +78,5 @@ from .plots.general_plots import (plot_candlestick_chart)
 from .plots.stochastic_models_plots import (plot_stochastic_paths)
 
 from .plots.technical_indicators_plots import (plot_sma, plot_ema, plot_macd, plot_bollinger_bands, plot_rsi, plot_adx)
+
+from .plots.pseudo_random_generators_plots import (plot_pdf, plot_2d_scattered_points, plot_3d_scattered_points)

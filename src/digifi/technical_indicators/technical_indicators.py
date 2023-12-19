@@ -169,3 +169,22 @@ def adx(high_price: np.ndarray, low_price: np.ndarray, close_price: np.ndarray, 
         adx_df.iloc[i, 9] = (adx_df["ADX"].iloc[i-1]*(period-1) + adx_df["Abs(+DI--DI)"].iloc[i])/period
     adx_df["ADX"] = adx_df["ADX"]*(100/(adx_df["+DI"]+adx_df["-DI"]))
     return adx_df
+
+
+
+def obv(close_price: np.ndarray, volume: np.ndarray) -> np.ndarray:
+    """
+    Takes in arrays of price and volume and returns a dataframe of OBV readings.
+    On-Balance Volume (OBV) is an indicator that describes the relationship between price and volume in the market.
+    """
+    compare_array_len(array_1=close_price, array_2=volume, array_1_name="close_price", array_2_name="volume")
+    obv = np.zeros(len(close_price))
+    for i in range(1, len(close_price)):
+        if close_price[i]>close_price[i-1]:
+            obv[i] = obv[i-1]+volume[i]
+        elif close_price[i]<close_price[i-1]:
+            obv[i] = obv[i-1]-volume[i]
+        else:
+            obv[i] = obv[i-1]
+    obv[0] = np.nan
+    return pd.Series(obv).to_frame(name="OBV")

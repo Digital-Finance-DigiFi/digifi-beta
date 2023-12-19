@@ -7,21 +7,26 @@ from src.digifi.plots.stochastic_models_plots import plot_stochastic_paths
 
 
 class ConstantElasticityOfVariance(StochasticProcessInterface):
-    """dS = mu*S*dt + sigma*S^(beta+1)*dW
-    Model used to reproduce the volatility smile effect."""
-    def __init__(self, mu: float, sigma: float, n_paths: int, n_steps: int, T: float, s_0: float, beta: float) -> None:
+    """
+    dS = mu*S*dt + sigma*S^(beta+1)*dW
+    Model used to reproduce the volatility smile effect.
+    """
+    def __init__(self, mu: float=0.2, sigma: float=0.4, beta: float=0.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
+                 s_0: float=100.0) -> None:
         self.mu = float(mu)
         self.sigma = float(sigma)
+        self.beta = float(beta)
         self.n_paths = int(n_paths)
         self.n_steps = int(n_steps)
         self.T = float(T)
         self.dt = T/n_steps
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
-        self.beta = float(beta)
     
     def get_paths(self) -> np.ndarray:
-        """Paths, S, of the Constant Elasticity of Variance Process."""
+        """
+        Paths, S, of the Constant Elasticity of Variance Process.
+        """
         # Stochastic process
         dW = np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.s_0*np.ones((1, self.n_paths)), np.zeros((self.n_steps, self.n_paths))), axis=0) 
@@ -31,11 +36,15 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
         return s
     
     def get_expectation(self) -> np.ndarray:
-        """Expected paths, E[S], of the Constant Elasticity of Variance Process."""
+        """
+        Expected paths, E[S], of the Constant Elasticity of Variance Process.
+        """
         return self.s_0*np.exp(self.mu*self.t)
     
     def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """Plot of the random paths taken by the Constant Elasticity of Variance Process."""
+        """
+        Plot of the random paths taken by the Constant Elasticity of Variance Process.
+        """
         expected_path = None
         if plot_expected:
             expected_path = self.get_expectation()
@@ -44,15 +53,18 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
 
 
 class HestonStochasticVolatility(StochasticProcessInterface):
-    """"dS = mu*S*dt + sqrt(v)*S*dW^{S}
-    dv = k*(theta-v)*dt + epsilon*sqrt(v)dW^{v}
-    Model describes the evolution of stock price and its volatility."""
-    def __init__(self, mu: float, k: float, theta: float, epsilon: float, n_paths: int, n_steps: int, T: float, s_0: float, v_0: float,
-                 rho: float) -> None:
+    """"
+    dS = mu*S*dt + sqrt(v)*S*dW_{S}
+    dv = k*(theta-v)*dt + epsilon*sqrt(v)dW_{v}
+    Model describes the evolution of stock price and its volatility.
+    """
+    def __init__(self, mu: float=0.1, k: float=5.0, theta: float=0.07, epsilon: float=0.2, rho: float=0.0, n_paths: int=100,
+                 n_steps: int=200, T: float=1.0, s_0: float=100.0, v_0: float=0.03) -> None:
         self.mu = float(mu)
         self.k = float(k)
         self.theta = float(theta)
         self.epsilon = float(epsilon)
+        self.rho = float(rho)
         self.n_paths = int(n_paths)
         self.n_steps = int(n_steps)
         self.T = float(T)
@@ -60,10 +72,11 @@ class HestonStochasticVolatility(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
         self.v_0 = float(v_0)
-        self.rho = float(rho)
     
     def get_paths(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Paths, S, of the Heston Stochastic Volatility Process."""
+        """
+        Paths, S, of the Heston Stochastic Volatility Process.
+        """
         Nv = np.random.randn(self.n_steps, self.n_paths)
         N = np.random.randn(self.n_steps, self.n_paths)
         NS = self.rho*Nv + np.sqrt(1-self.rho**2)*N
@@ -82,12 +95,16 @@ class HestonStochasticVolatility(StochasticProcessInterface):
         return (s, v)
     
     def get_expectation(self) -> np.ndarray:
-        """Expected paths, E[S], of the Heston Stochastic Volatility Process."""
+        """
+        Expected paths, E[S], of the Heston Stochastic Volatility Process.
+        """
         return (self.s_0 + (self.mu-0.5*self.theta)*self.t
                 + (self.theta-self.v_0)*(1-np.exp(-self.k*self.t))/(2*self.k))
     
     def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """Plot of the random paths taken by the Heston Stochastic Volatility Process."""
+        """
+        Plot of the random paths taken by the Heston Stochastic Volatility Process.
+        """
         expected_path = None
         if plot_expected:
             expected_path = self.get_expectation()
@@ -96,11 +113,14 @@ class HestonStochasticVolatility(StochasticProcessInterface):
 
 
 class VarianceGammaProcess(StochasticProcessInterface):
-    """dS = mu*dG(t) + sigma*dW(dG(t))
-    Model used in option pricing."""
-    def __init__(self, mu: float, sigma: float, n_paths: int, n_steps: int, T: float, s_0: float, rate: float) -> None:
+    """
+    dS = mu*dG(t) + sigma*dW(dG(t))
+    Model used in option pricing.
+    """
+    def __init__(self, mu: float=0.2, sigma: float=0.3, rate: float=20.0, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=0.03) -> None:
         self.mu = float(mu)
         self.sigma = float(sigma)
+        self.kappa = float(1/rate)
         self.n_paths = int(n_paths)
         self.n_steps = int(n_steps)
         self.T = float(T)
@@ -108,10 +128,11 @@ class VarianceGammaProcess(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
         self.rate = float(rate)
-        self.kappa = float(1/rate)
     
     def get_paths(self) -> np.ndarray:
-        """Paths, S, of the Variance Gamma Process."""
+        """
+        Paths, S, of the Variance Gamma Process.
+        """
         # Stochastic process
         dG = np.random.gamma(self.dt/self.kappa, self.kappa, (self.n_steps, self.n_paths))
         dS = self.mu*dG + self.sigma*np.random.randn(self.n_steps, self.n_paths)*np.sqrt(dG)
@@ -120,15 +141,21 @@ class VarianceGammaProcess(StochasticProcessInterface):
         return np.cumsum(dS, axis=0)
     
     def get_expectation(self) -> np.ndarray:
-        """Expected path, E[S], of the Variance Gamma Process."""
+        """
+        Expected path, E[S], of the Variance Gamma Process.
+        """
         return self.mu*self.t + self.s_0 
     
     def get_variance(self) -> np.ndarray:
-        """Variance, Var[S], of the Variance Gamma Process."""
+        """
+        Variance, Var[S], of the Variance Gamma Process.
+        """
         return (self.sigma**2 + (self.mu**2)/self.rate)*self.t
     
     def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """Plot of the random paths taken by the Variance Gamma Process."""
+        """
+        Plot of the random paths taken by the Variance Gamma Process.
+        """
         expected_path = None
         if plot_expected:
             expected_path = self.get_expectation()
