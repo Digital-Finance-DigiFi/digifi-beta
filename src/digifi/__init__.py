@@ -13,6 +13,14 @@ from .utilities.bonds_utils import (bootstrap)
 
 from .utilities.corporate_finance_utils import (dol, pe_ratio, dividend_yield, book_value, pb_ratio)
 
+# Lattice-based models
+
+from .lattice_based_models.general import (LatticeModelPayoffType)
+
+from .lattice_based_models.binomial_models import (binomial_tree_nodes, binomial_model, BrowninMotionBinomialModel)
+
+from .lattice_based_models.trinomial_models import (trinomial_tree_nodes, trinomial_model, BrownianMotionTrinomialModel)
+
 # Financial instruments
 
 from .financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
