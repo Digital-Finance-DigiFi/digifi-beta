@@ -102,7 +102,7 @@ class Bond(FinancialInstrumentInterface, BondStruct):#, BondInteraface):
         self.principal = float(principle)
         self.coupon_rate = float(coupon_rate)
         self.maturity = float(maturity)
-        initial_investment = float(initial_investment)
+        self.initial_investment = float(initial_investment)
         # FinancialInstrumentStruct parameters
         self.instrument_type = FinancialInstrumentType.CASH_INSTRUMENT
         self.asset_class = FinancialInstrumentAssetClass.DEBT_BASED_INSTRUMENT

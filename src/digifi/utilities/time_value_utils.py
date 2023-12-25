@@ -1,6 +1,8 @@
 from typing import Union
 import numpy as np
+from scipy.optimize import fsolve
 from enum import Enum
+from src.digifi.utilities.general_utils import compare_array_len
 
 
 
@@ -63,9 +65,8 @@ def present_value(cashflow: np.ndarray, time_array: np.ndarray, rate: Union[np.n
     """
     Present value of the cashflow discounted at a certain rate for every time period.
     """
-    if len(cashflow)!=len(time_array):
-        raise TypeError("The length of cashflow and time_array do not match.")
-    if isinstance(rate, float):
+    compare_array_len(array_1=cashflow, array_2=time_array, array_1_name="cashflow", array_2_name="time_array")
+    if isinstance(rate, float) or isinstance(rate, int):
         if (rate<-1) and (1<rate):
             raise ValueError("The agrument rate must be defined in in the interval (-1,1).")
         rate = rate*np.ones(len(cashflow))
@@ -99,7 +100,16 @@ def future_value(current_value: float, rate: float,  time: float, compounding_ty
     discount_term = Compounding(rate=rate, compounding_type=compounding_type, compounding_frequency=compounding_frequency)
     future_value = current_value/discount_term.compounding_term(time=time)
     return future_value
-    
+
+
+
+def internal_rate_of_return(initial_cashflow: float, cashflow: np.ndarray, time_array: np.ndarray,
+                            compounding_type: CompoundingType=CompoundingType.CONTINUOUS, compounding_frequency: int=1) -> float:
+    def cashflow_series(rate: float) -> float:
+        return present_value(cashflow=cashflow, time_array=time_array, rate=float(rate), compounding_type=compounding_type,
+                             compounding_frequency=compounding_frequency) - initial_cashflow
+    return fsolve(cashflow_series, x0=0)[0]
+
 
 
 def ptp_compounding_transformation(current_rate: float, current_frequency: int, new_frequency: int) -> float:

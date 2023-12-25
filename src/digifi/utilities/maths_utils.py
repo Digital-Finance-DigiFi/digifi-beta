@@ -1,5 +1,6 @@
 import numpy as np
 # TODO: Add error function
+# TODO: Add numerical solver to replace fsolve
 # TODO: Add incomplete beta function
 
 

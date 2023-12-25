@@ -74,7 +74,7 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
 
 
 
-class BrowninMotionBinomialModel:
+class BrownianMotionBinomialModel:
     """
     Binomial models that are scaled to emulate Brownian motion.
     """

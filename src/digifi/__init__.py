@@ -3,23 +3,28 @@
 
 from .utilities.maths_utils import (factorial, n_choose_r)
 
-from .utilities.time_value_utils import (CompoundingType, Cashflow, present_value, net_present_value, future_value,
+from .utilities.time_value_utils import (CompoundingType, Cashflow, present_value, net_present_value, future_value, internal_rate_of_return,
                                          ptp_compounding_transformation, ptc_compounding_transformation, ctp_compounding_transformation,
                                          real_interest_rate, forward_interest_rate, Compounding, Perpetuity, Annuity)
 
 from .utilities.general_utils import (verify_array, compare_array_len, generate_ohlc_price_df)
 
-from .utilities.bonds_utils import (bootstrap)
+from .utilities.bonds_utils import (bond_price_from_yield, bootstrap)
 
-from .utilities.corporate_finance_utils import (dol, pe_ratio, dividend_yield, book_value, pb_ratio)
+from .utilities.corporate_finance_utils import (dol, pe_ratio, dividend_yield, book_value, pb_ratio, cost_of_equity_capital,
+                                                maximum_drawdown)
 
 # Lattice-based models
 
 from .lattice_based_models.general import (LatticeModelPayoffType)
 
-from .lattice_based_models.binomial_models import (binomial_tree_nodes, binomial_model, BrowninMotionBinomialModel)
+from .lattice_based_models.binomial_models import (binomial_tree_nodes, binomial_model, BrownianMotionBinomialModel)
 
 from .lattice_based_models.trinomial_models import (trinomial_tree_nodes, trinomial_model, BrownianMotionTrinomialModel)
+
+# Corporate finance
+
+from .corporate_finance.linear_regression_models import (CAPMSolutionType, CAPM)
 
 # Financial instruments
 
