@@ -1,6 +1,5 @@
-from typing import List
-from src.digifi.financial_instruments.bonds import Bond
 import numpy as np
+from src.digifi.utilities.general_utils import compare_array_len
 
 
 
@@ -18,9 +17,23 @@ def bond_price_from_yield(current_price: float, duration: float, convexity: floa
 
 
 
-def bootstrap(bonds: List[Bond]) -> np.ndarray:
+def bootstrap(principals: np.ndarray, maturities: np.ndarray, coupons: np.ndarray, prices: np.ndarray, coupon_dt: np.ndarray) -> np.ndarray:
     """
     Spot rate computation for a given list of bonds.
+    The argument coupon_dt is the difference between times of coupon payments (e.g., for semi-annual coupon coupon_dt=0.5).
     """
-    # TODO: Add code for the bootstrap method
-    return np.ones(1)
+    compare_array_len(array_1=principals, array_2=maturities, array_1_name="principals", array_2_name="maturities")
+    compare_array_len(array_1=principals, array_2=coupons, array_1_name="principals", array_2_name="coupons")
+    compare_array_len(array_1=principals, array_2=prices, array_1_name="principals", array_2_name="prices")
+    compare_array_len(array_1=principals, array_2=coupon_dt, array_1_name="principals", array_2_name="coupon_dt")
+    if sum(coupon_dt>1)+sum(coupon_dt<0)!=0:
+        raise ValueError("The argument coupon_dt must have entries defined within the [0, 1] range.")
+    spot_rates = np.array([])
+    for i in range(len(principals)):
+        payment_times_before_maturity = np.arange(start=coupon_dt[i], stop=maturities[i], step=coupon_dt[i])
+        discount_term = 0
+        for time_step in payment_times_before_maturity:
+            discount_term = discount_term + np.exp(-time_step*spot_rates[np.nonzero(maturities==time_step)][0])
+        spot_rate = -np.log((prices[i] - coupons[i]*coupon_dt[i]*discount_term)/(principals[i] + coupons[i]*coupon_dt[i]))/maturities[i]
+        spot_rates = np.append(spot_rates, spot_rate)
+    return spot_rates

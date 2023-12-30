@@ -9,7 +9,6 @@ from src.digifi.financial_instruments.general import (FinancialInstrumentStruct,
 
 @dataclass
 class StockStruct(FinancialInstrumentStruct):
-    """Struct to track a stock."""
     # TODO: Add constraint for only historical prices to be allowed to be accessed
     price_per_share: Union[np.ndarray, float]
     dividend: Union[np.ndarray, float]

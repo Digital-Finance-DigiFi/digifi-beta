@@ -1,7 +1,7 @@
 from typing import List, Callable, Union
 import numpy as np
 from src.digifi.utilities.maths_utils import n_choose_r
-from src.digifi.lattice_based_models.general import LatticeModelPayoffType
+from src.digifi.lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
 
 
 
@@ -74,7 +74,7 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
 
 
 
-class BrownianMotionBinomialModel:
+class BrownianMotionBinomialModel(LatticeModelInterface):
     """
     Binomial models that are scaled to emulate Brownian motion.
     """
@@ -89,22 +89,22 @@ class BrownianMotionBinomialModel:
         self.n_steps = int(n_steps)
         match payoff_type:
             case LatticeModelPayoffType.CALL:
-                self.payoff: Callable = self.__call_payoff
+                self.payoff: Callable = self.call_payoff
             case LatticeModelPayoffType.PUT:
-                self.payoff: Callable = self.__put_payoff
+                self.payoff: Callable = self.put_payoff
             case _:
                 raise ValueError("The argument payoff_type must be of BinomialModelPayoffType type.")
         self.dt = T/n_steps
         self.u = np.exp(sigma*np.sqrt(self.dt))
         self.d = np.exp(-sigma*np.sqrt(self.dt))
     
-    def __call_payoff(self, s_t: float) -> float:
-        return max(float(s_t)-self.k, 0)
+    def call_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+        return max(s_t-self.k, 0)
     
-    def __put_payoff(self, s_t: float) -> float:
-        return max(self.k-float(s_t), 0)
+    def put_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+        return max(self.k-s_t, 0)
     
-    def european_option_binomial_model(self) -> float:
+    def european_option(self) -> float:
         """
         Binomial model that computes the payoffs for each path and computes the weighted average of paths based on probability.
         """
@@ -116,16 +116,16 @@ class BrownianMotionBinomialModel:
             value += self.payoff(s_t=s_T)*node_probability
         return float(value*np.exp(-self.r*self.T))
     
-    def american_option_binomial_model(self) -> float:
+    def american_option(self) -> float:
         """
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
         """
         payoff_timesteps = []
         for _ in range(self.n_steps):
             payoff_timesteps.append(True)
-        return self.bermudan_option_binomial_model(payoff_timesteps=payoff_timesteps)
+        return self.bermudan_option(payoff_timesteps=payoff_timesteps)
     
-    def bermudan_option_binomial_model(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
+    def bermudan_option(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
         """
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
         """

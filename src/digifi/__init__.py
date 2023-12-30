@@ -16,7 +16,7 @@ from .utilities.corporate_finance_utils import (dol, pe_ratio, dividend_yield, b
 
 # Lattice-based models
 
-from .lattice_based_models.general import (LatticeModelPayoffType)
+from .lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
 
 from .lattice_based_models.binomial_models import (binomial_tree_nodes, binomial_model, BrownianMotionBinomialModel)
 
@@ -31,9 +31,12 @@ from .corporate_finance.linear_regression_models import (CAPMSolutionType, CAPM)
 from .financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                             FinancialInstrumentAssetClass)
 
-from .financial_instruments.bonds import (BondType, BondStruct, BondInteraface, Bond)
+from .financial_instruments.bonds import (BondType, BondStruct, BondInterface, YtMMethod, Bond)
 
 from .financial_instruments.stocks import (StockStruct, StockInteraface, Stock)
+
+from .financial_instruments.derivatives import (ContractType, OptionType, OptionPayoffType, OptionPricingMethod, FuturesContractStruct,
+                                                OptionStruct, FuturesContractInterface, OptionInterface, FuturesContract, Option)
 
 from .financial_instruments.rates_and_swaps import (ForwardRateAgreementStruct, ForwardRateAgreement)
 
@@ -93,3 +96,5 @@ from .plots.stochastic_models_plots import (plot_stochastic_paths)
 from .plots.technical_indicators_plots import (plot_sma, plot_ema, plot_macd, plot_bollinger_bands, plot_rsi, plot_adx)
 
 from .plots.pseudo_random_generators_plots import (plot_pdf, plot_2d_scattered_points, plot_3d_scattered_points)
+
+from .plots.financial_instuments_plots import (plot_option_payoff)

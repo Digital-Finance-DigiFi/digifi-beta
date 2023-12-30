@@ -6,8 +6,7 @@ import src.digifi as dgf
 
 
 def main():
-    print("Hello")
-
+    pass
 
 
 

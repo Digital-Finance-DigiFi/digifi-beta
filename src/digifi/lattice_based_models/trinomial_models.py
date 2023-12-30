@@ -1,6 +1,6 @@
 from typing import List, Callable, Union
 import numpy as np
-from src.digifi.lattice_based_models.general import LatticeModelPayoffType
+from src.digifi.lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
 
 
 
@@ -76,7 +76,7 @@ def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_
 
 
 
-class BrownianMotionTrinomialModel:
+class BrownianMotionTrinomialModel(LatticeModelInterface):
     """
     Trinomial models that are scaled to emulate Brownian motion.
     """
@@ -91,9 +91,9 @@ class BrownianMotionTrinomialModel:
         self.n_steps = int(n_steps)
         match payoff_type:
             case LatticeModelPayoffType.CALL:
-                self.payoff: Callable = self.__call_payoff
+                self.payoff: Callable = self.call_payoff
             case LatticeModelPayoffType.PUT:
-                self.payoff: Callable = self.__put_payoff
+                self.payoff: Callable = self.put_payoff
             case _:
                 raise ValueError("The argument payoff_type must be of BinomialModelPayoffType type.")
         self.dt = T/n_steps
@@ -104,13 +104,13 @@ class BrownianMotionTrinomialModel:
         self.p_u = ((np.exp((r-q)*self.dt/2)-np.exp(-sigma*np.sqrt(self.dt/2))) / (np.exp(sigma*np.sqrt(self.dt/2))-np.exp(-sigma*np.sqrt(self.dt/2))))**2
         self.p_d = ((np.exp(sigma*np.sqrt(self.dt/2))-np.exp((r-q)*self.dt/2)) / (np.exp(sigma*np.sqrt(self.dt/2))-np.exp(-sigma*np.sqrt(self.dt/2))))**2
     
-    def __call_payoff(self, s_t: np.ndarray) -> np.ndarray:
+    def call_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
         return np.maximum(s_t-self.k, 0)
     
-    def __put_payoff(self, s_t: np.ndarray) -> np.ndarray:
+    def put_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
         return np.maximum(self.k-s_t, 0)
     
-    def european_option_trinomial_model(self) -> float:
+    def european_option(self) -> float:
         """
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
@@ -120,7 +120,7 @@ class BrownianMotionTrinomialModel:
         return np.exp(-self.r*self.T)*trinomial_model(payoff=self.payoff, start_point=self.s_0, u=self.u, d=self.d, p_u=self.p_u, p_d=self.p_d,
                                                       n_steps=self.n_steps, payoff_timesteps=payoff_timesteps)
     
-    def american_option_trinomial_model(self) -> float:
+    def american_option(self) -> float:
         """
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
@@ -130,7 +130,7 @@ class BrownianMotionTrinomialModel:
         return np.exp(-self.r*self.T)*trinomial_model(payoff=self.payoff, start_point=self.s_0, u=self.u, d=self.d, p_u=self.p_u, p_d=self.p_d,
                                                       n_steps=self.n_steps, payoff_timesteps=payoff_timesteps)
     
-    def bermudan_option_trinomial_model(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
+    def bermudan_option(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
         """
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
