@@ -1,8 +1,5 @@
-from typing import Union
 import numpy as np
-import plotly.graph_objects as go
 from src.digifi.pseudo_random_generators.general import PseudoRandomGeneratorInterface
-from src.digifi.plots.pseudo_random_generators_plots import (plot_pdf, plot_2d_scattered_points, plot_3d_scattered_points)
 
 
 
@@ -22,7 +19,7 @@ class LinearCongruentialPseudoRandomNumberGenerator(PseudoRandomGeneratorInterfa
         self.a = int(a)
         self.b = int(b)
 
-    def get_randomized_array(self) -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """
         Array of pseudo-random generated numbers based on Linear Congruential Generator.
         """
@@ -31,24 +28,6 @@ class LinearCongruentialPseudoRandomNumberGenerator(PseudoRandomGeneratorInterfa
         for i in range(1, self.sample_size):
             u[i] = (self.a*u[i-1] + self.b)%self.M
         return u/self.M
-    
-    def plot_pdf(self, n_bins: int=100, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Histogram plot of the probability density function of an array generated with Linear Congruential Generator.
-        """
-        return plot_pdf(points=self.get_randomized_array(), n_bins=n_bins, return_fig_object=return_fig_object)
-    
-    def plot_2d_scattered_points(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        2D scatter plot of the pseudo-random points generated with Linear Congruential Generator.
-        """
-        return plot_2d_scattered_points(points=self.get_randomized_array(), return_fig_object=return_fig_object)
-    
-    def plot_3d_scattered_points(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        3D scatter plot of the pseudo-random points generated with Linear Congruential Generator.
-        """
-        return plot_3d_scattered_points(points=self.get_randomized_array(), return_fig_object=return_fig_object)
 
 
 
@@ -70,7 +49,7 @@ class FibonacciPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
         self. a = int(a)
         self.b = int(b)
     
-    def get_randomized_array(self) -> np.ndarray:
+    def generate(self) -> np.ndarray:
         """
         Array of pseudo-random generated numbers based on Fibonacci Generator.
         """
@@ -81,21 +60,3 @@ class FibonacciPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
         for i in range(self.nu+1, self.sample_size):
             u[i] = (u[i-self.nu]-u[i-self.mu])%self.M
         return u/self.M
-    
-    def plot_pdf(self, n_bins: int=100, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Histogram plot of the probability density function of an array generated with Fibonacci Generator.
-        """
-        return plot_pdf(points=self.get_randomized_array(), n_bins=n_bins, return_fig_object=return_fig_object)
-    
-    def plot_2d_scattered_points(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        2D scatter plot of the pseudo-random points generated with Fibonacci Generator.
-        """
-        return plot_2d_scattered_points(points=self.get_randomized_array(), return_fig_object=return_fig_object)
-    
-    def plot_3d_scattered_points(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        3D scatter plot of the pseudo-random points generated with Fibonacci Generator.
-        """
-        return plot_3d_scattered_points(points=self.get_randomized_array(), return_fig_object=return_fig_object)

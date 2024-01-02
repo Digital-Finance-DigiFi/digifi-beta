@@ -16,21 +16,10 @@ class CAPM:
     CAPM, three-factor and five-factor Famma-French models.
     Contains methods for finding asset beta and predicting expected asset returns with the given beta.
     """
-    def __init__(self) -> None:
-        # CAPM arguments
-        self.asset_returns = np.array([])
-        self.market_returns = np.array([])
-        self.rf_rates = np.array([])
-        self.beta = np.nan
-        # Three-factor Famma-French arguments
-        # TODO: Add three-factor Famma-French arguments
-        self.smb = np.array([])
-        self.hml = np.array([])
-        # Five-factor Famma-French arguments
-        # TODO: Add five factor Famma-French arfuments
     
-    def capm_get_params(self, asset_returns: np.ndarray, market_returns: np.ndarray, rf_rates: np.ndarray,
-                      solution_type: CAPMSolutionType=CAPMSolutionType.LINEAR_REGRESSION) -> dict:
+    @staticmethod
+    def capm_get_params(asset_returns: np.ndarray, market_returns: np.ndarray, rf_rates: np.ndarray,
+                        solution_type: CAPMSolutionType=CAPMSolutionType.LINEAR_REGRESSION) -> dict:
         """
         E[R_{A}] = \\alpha + R_{rf} + \\beta(E[R_{M}] - R_{rf}) + \\epsilon.
         Finds the values of parameters alpha and beta (if COVARIANCE solution type is used, only beta is returned).
@@ -65,7 +54,8 @@ class CAPM:
             raise ValueError("The arguments market_returns, rf_rates and betas all have to be simultaneously either an np.ndarray or float.")
         return rf_rates + alphas + betas*(market_returns-rf_rates)
     
-    def tfff_get_params(self,) -> float:
+    @staticmethod
+    def tfff_get_params() -> float:
         """
         E[R_{A}] = R_{rf} + \\alpha + \\beta_{M}(E[R_{M}] - R_{rf}) + \\beta_{S}SMB + \\beta_{H}HML + \\epsilon.
         Finds the values of parameters alpha and betas.
@@ -103,7 +93,8 @@ class CAPM:
             raise ValueError("The arguments market_returns, rf_rates and betas all have to be simultaneously either an np.ndarray or float.")
         return rf_rates + alphas + m_betas*(market_returns-rf_rates) + s_betas*smb + h_betas*hml
 
-    def ffff_get_params(self,) -> float:
+    @staticmethod
+    def ffff_get_params() -> float:
         """
         E[R_{A}] = R_{rf} + \\alpha + \\beta_{M}(E[R_{M}] - R_{rf}) + \\beta_{S}SMB + \\beta_{H}HML + \\beta_{R}RMW + \\beta_{C}CMA + \\epsilon.
         Finds the values of parameters alpha and betas.

@@ -32,8 +32,8 @@ def box_muller_algorithm(uniform_array_1: np.ndarray, uniform_array_2: np.ndarra
 
 
 def marsaglia_method(max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=32_456) -> (float, float):
-    w_1 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_1, sample_size=max_iterations).get_randomized_array() - 1
-    w_2 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=max_iterations).get_randomized_array() - 1
+    w_1 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_1, sample_size=max_iterations).generate() - 1
+    w_2 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=max_iterations).generate() - 1
     i = 0
     while i<max_iterations:
         s = w_1[i]**2 + w_2[i]**2
@@ -55,8 +55,8 @@ def ziggurat_algorithm(x_guess: np.ndarray, sample_size: int=10_000, max_iterati
     Y = normal_dist.pdf(x=x_guess)
     Z = np.ones(sample_size)
     for j in range(sample_size):
-        U_1 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_1, sample_size=len(x_guess)).get_randomized_array() - 1
-        U_2 = FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=len(x_guess)).get_randomized_array()
+        U_1 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_1, sample_size=len(x_guess)).generate() - 1
+        U_2 = FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=len(x_guess)).generate()
         i = 0
         while (Z[j]==1) and i<max_iterations:
             # TODO: Replace randint with custom pseudo-random integer generator

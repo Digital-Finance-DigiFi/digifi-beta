@@ -3,12 +3,10 @@ import abc
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-import plotly.graph_objects as go
 from src.digifi.utilities.time_value_utils import (CompoundingType, Compounding)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
 from src.digifi.probability_distributions.continuous_probability_distributions import NormalDistribution
-from src.digifi.plots.financial_instuments_plots import plot_option_payoff
 from src.digifi.lattice_based_models.general import LatticeModelPayoffType
 from src.digifi.lattice_based_models.binomial_models import BrownianMotionBinomialModel
 from src.digifi.lattice_based_models.trinomial_models import BrownianMotionTrinomialModel
@@ -107,8 +105,6 @@ class OptionInterface(metaclass=abc.ABCMeta):
                 callable(subclass.call_payoff) and
                 hasattr(subclass, "put_payoff") and
                 callable(subclass.put_payoff) and
-                hasattr(subclass, "plot_payoff") and
-                callable(subclass.plot_payoff) and
                 hasattr(subclass, "delta") and
                 callable(subclass.delta) and
                 hasattr(subclass, "vega") and
@@ -137,15 +133,6 @@ class OptionInterface(metaclass=abc.ABCMeta):
         Put payoff function.
         """
         raise NotImplementedError
-    
-    @abc.abstractmethod
-    def plot_payoff(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot payoff or profit of the option.
-        """
-        raise NotImplementedError
-    
-    # TODO: Add 3D payoff plot
     
     @staticmethod
     @abc.abstractmethod
@@ -320,22 +307,6 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
         Payoff = max(k - s_{t}, 0)
         """
         return np.maximum(k - s_t, 0)
-
-    def plot_payoff(self, n_prices: int=100, start_price: Union[float, None]=None, stop_price: Union[float, None]=None, profit: bool=False,
-                    return_fig_object: bool = False) -> Union[go.Figure, None]:
-        if isinstance(start_price, float):
-            pass
-        else:
-            start_price = self.strike_price - self.strike_price*3*self.sigma
-        if isinstance(stop_price, float):
-            pass
-        else:
-            stop_price = self.strike_price + self.strike_price*3*self.sigma
-        asset_prices = np.linspace(start=start_price, stop=stop_price, num=int(n_prices))
-        payoffs = self.payoff(s_t=asset_prices, k=self.strike_price)
-        if profit:
-            payoffs = payoffs - self.initial_option_price
-        return plot_option_payoff(asset_prices=asset_prices, payoffs=payoffs, return_fig_object=return_fig_object)
     
     @staticmethod
     def delta(option_value_1: float, option_value_0: float, asset_price_1: float, asset_price_0: float) -> float:

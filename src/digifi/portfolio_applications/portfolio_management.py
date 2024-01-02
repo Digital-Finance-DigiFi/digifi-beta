@@ -2,11 +2,9 @@ from typing import Union, List
 import copy
 import numpy as np
 import scipy.optimize as sc
-import plotly.graph_objects as go
 from src.digifi.portfolio_applications.general import (ReturnsMethod, ArrayRetrunsType, prices_to_returns, returns_average,
                                                        PortfolioInterface)
 from src.digifi.utilities.general_utils import (verify_array, compare_array_len)
-from src.digifi.plots.portfolio_application_plots import (plot_portfolio_cumulative_returns, plot_efficient_frontier)
 # TODO: Add portfolio autocorrelation
 
 
@@ -258,22 +256,6 @@ class Portfolio(PortfolioInterface):
         return {"min_vol":{"return":min_vol_mean_return, "std":min_vol_std},
                 "eff":{"return":target_returns, "std":efficient_risk},
                 "max_sr":{"return":max_sr_mean_return, "std":max_sr_std}}
-
-    def plot_portfolio_cumulative_returns(self, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot the cumulative return of the portfolio.
-        """
-        cumulative_portfolio_returns = self.array_returns(operation_type=ArrayRetrunsType.CUMULATIVE_PORTFOLIO_RETURNS)
-        return plot_portfolio_cumulative_returns(cumulative_portfolio_returns=cumulative_portfolio_returns, return_fig_object=return_fig_object)
-
-    def plot_efficient_frontier(self, r: float, frontier_n_points: int=20, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN,
-                                weight_constraint: tuple=(0,1), return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot efficient frontier along with maximum Sharpe ratio point and minimum volatility point.
-        """
-        efficient_frontier_dict = self.efficient_frontier(r=r, frontier_n_points=frontier_n_points, n_periods=n_periods, method=method,
-                                                          weight_constraint=weight_constraint)
-        return plot_efficient_frontier(efficient_frontier_dict=efficient_frontier_dict, return_fig_object=return_fig_object)
 
 
 

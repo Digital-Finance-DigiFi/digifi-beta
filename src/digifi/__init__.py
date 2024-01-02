@@ -7,7 +7,7 @@ from .utilities.time_value_utils import (CompoundingType, Cashflow, present_valu
                                          ptp_compounding_transformation, ptc_compounding_transformation, ctp_compounding_transformation,
                                          real_interest_rate, forward_interest_rate, Compounding, Perpetuity, Annuity)
 
-from .utilities.general_utils import (verify_array, compare_array_len, generate_ohlc_price_df)
+from .utilities.general_utils import (verify_array, compare_array_len, rolling)
 
 from .utilities.bonds_utils import (bond_price_from_yield, bootstrap)
 

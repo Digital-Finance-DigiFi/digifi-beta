@@ -1,15 +1,22 @@
-from typing import Union
+from typing import Union, Callable
 import numpy as np
 import plotly.graph_objects as go
-from src.digifi.utilities.general_utils import compare_array_len
 
 
 
-def plot_option_payoff(asset_prices: np.ndarray, payoffs: np.ndarray, return_fig_object: bool = False) -> Union[go.Figure, None]:
-    compare_array_len(array_1=asset_prices, array_2=payoffs, array_1_name="asset_prices", array_2_name="payoffs")
+def plot_option_payoff(payoff: Callable, strike_price: float, start_price: float, stop_price: float, n_prices: int=100, profit: bool=False,
+                       initial_option_price: float=0, return_fig_object: bool = False) -> Union[go.Figure, None]:
+    asset_prices = np.linspace(start=float(start_price), stop=float(stop_price), num=int(n_prices))
+    payoffs = payoff(s_t=asset_prices, k=strike_price)
+    if profit:
+        payoffs = payoffs - initial_option_price
     fig = go.Figure(go.Scatter(x=asset_prices, y=payoffs, name="Option Payoff"))
     if bool(return_fig_object):
         return fig
     else:
         fig.show()
         return None
+
+
+
+# TODO: Add option 3D surface plot

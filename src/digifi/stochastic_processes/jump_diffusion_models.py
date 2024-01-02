@@ -1,8 +1,5 @@
-from typing import Union
 import numpy as np
-import plotly.graph_objects as go
 from src.digifi.stochastic_processes.general import StochasticProcessInterface
-from src.digifi.plots.stochastic_models_plots import plot_stochastic_paths
 
 
 
@@ -37,7 +34,7 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
         dS = dX + dJ
         # Data formatting
         dS = np.insert(dS, 0, self.s_0, axis=0)
-        return np.cumsum(dS, axis=0)
+        return np.cumsum(dS, axis=0).transpose()
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -50,15 +47,6 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
         Variance, Var[S], of the Merton Jump-Diffusion Process.
         """
         return (self.mu_s**2+self.lambda_j*(self.mu_j**2+self.sigma_j**2))*self.t
-    
-    def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[np.ndarray, None]:
-        """
-        Plot of the random paths taken by the Merton Jump-Diffusion Process.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths(), expected_path=expected_path, return_fig_object=return_fig_object)
 
 
 
@@ -103,7 +91,7 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
         dS = dX + dJ
         # Data formatting
         dS = np.insert(dS, 0, self.s_0, axis=0)
-        return np.cumsum(dS, axis=0)
+        return np.cumsum(dS, axis=0).transpose()
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -116,12 +104,3 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
         Variance, Var[S], of the Kou Jump-Diffusion Process.
         """
         return (self.sigma**2 + 2*self.lambda_n*(self.p/(self.eta_1**2)+(1-self.p)/(self.eta_2**2)))*self.t
-    
-    def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Kou Jump-Diffusion Process.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths(), expected_path=expected_path, return_fig_object=return_fig_object)

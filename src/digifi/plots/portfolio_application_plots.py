@@ -1,7 +1,7 @@
 from typing import Union
 import numpy as np
 import plotly.graph_objects as go
-from src.digifi.utilities.general_utils import verify_array
+from .utilities import verify_array
 
 
 

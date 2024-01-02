@@ -1,10 +1,15 @@
 from typing import Union
 import numpy as np
 import plotly.graph_objects as go
+from .utilities import verify_array
 
 
 
 def plot_pdf(points: np.ndarray, n_bins: int=100, return_fig_object: bool=False) -> Union[go.Figure, None]:
+    """
+    Histogram plot of the probability density function.
+    """
+    verify_array(array=points, array_name="points")
     fig = go.Figure(go.Histogram(x=points, histnorm="probability density", nbinsx=int(n_bins), name="Probability Density Function"))
     if bool(return_fig_object):
         return fig
@@ -15,6 +20,10 @@ def plot_pdf(points: np.ndarray, n_bins: int=100, return_fig_object: bool=False)
 
 
 def plot_2d_scattered_points(points: np.ndarray, return_fig_object: bool=False) -> Union[go.Figure, None]:
+    """
+    2D scatter plot of the pseudo-random points generated.
+    """
+    verify_array(array=points, array_name="points")
     x = points[0:len(points)-1]
     y = points[1:len(points)]
     fig = go.Figure(go.Scatter(x=x, y=y, name="2D Scatter Plot", mode="markers"))
@@ -27,6 +36,10 @@ def plot_2d_scattered_points(points: np.ndarray, return_fig_object: bool=False) 
     
 
 def plot_3d_scattered_points(points: np.ndarray, return_fig_object: bool=False) -> Union[go.Figure, None]:
+    """
+    3D scatter plot of the pseudo-random points generated.
+    """
+    verify_array(array=points, array_name="points")
     x = points[0:len(points)-2]
     y = points[1:len(points)-1]
     z = points[2:len(points)]

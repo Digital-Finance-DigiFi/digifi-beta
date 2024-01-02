@@ -21,9 +21,8 @@ classifiers = [
 
 dependencies = [
     "numpy>=1.24",
-    "pandas>=2.0",
     "plotly>=5.15",
-    "scipy>=1.11"
+    "scipy>=1.11",
 ]
 
 # TODO: Add links to a repo

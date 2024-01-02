@@ -1,9 +1,6 @@
-from typing import Union
 import enum
 import numpy as np
-import plotly.graph_objects as go
 from src.digifi.stochastic_processes.general import StochasticProcessInterface
-from src.digifi.plots.stochastic_models_plots import plot_stochastic_paths
 
 
 
@@ -58,17 +55,7 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
         """
         Auto-covariance of the Arithmetic Brownian Motion between times t1 and t2.
         """
-        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])
-    
-    def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Arithmetic Brownian Motion.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths().transpose(), expected_path=expected_path, return_fig_object=return_fig_object)
-        
+        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])     
 
 
 
@@ -97,7 +84,7 @@ class GeometricBrownianMotion(StochasticProcessInterface):
         # Data formatting
         dS = np.insert(dS, 0, 0, axis=1)
         s = np.cumsum(dS, axis=1)
-        return self.s_0*np.exp(s)
+        return (self.s_0*np.exp(s))
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -110,15 +97,6 @@ class GeometricBrownianMotion(StochasticProcessInterface):
         Variance, Var[S], of the Geometric Brownian Motion at each time step.
         """
         return (self.s_0**2)*np.exp(2*self.mu*self.t)*(np.exp(self.t*self.sigma**2)-1)
-    
-    def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Geometric Brownian Motion.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths().transpose(), expected_path=expected_path, return_fig_object=return_fig_object)
 
 
 
@@ -158,7 +136,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
             std = self.sigma*np.sqrt(self.dt)
             for i in range(0, self.n_steps):
                 s[i+1,:] = s[i,:] + self.alpha*(self.mu-s[i,:])*self.dt + std*N[i,:]
-        return s
+        return s.transpose()
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -171,16 +149,6 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
         Variance, Var[S], of the Ornstein-Uhlenbeck Process at each time step.
         """
         return (1-np.exp(-2*self.alpha*self.t))*(self.sigma**2)/(2*self.alpha)
-    
-    def plot(self, analytic_em: bool=False, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Ornstain Uhlenbeck Process.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths(analytic_em=analytic_em), expected_path=expected_path,
-                                     return_fig_object=return_fig_object)
         
 
 
@@ -210,7 +178,7 @@ class BrownianBridge(StochasticProcessInterface):
                              np.zeros((self.n_steps-1, self.n_paths)), self.beta*np.ones((1, self.n_paths))), axis=0)
         for i in range(0, self.n_steps-1):
             s[i+1,:] = s[i,:] + (self.beta-s[i,:])/(self.n_steps-i+1) +self.sigma*dW[i,:]
-        return s
+        return s.transpose()
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -223,15 +191,6 @@ class BrownianBridge(StochasticProcessInterface):
         Variance, Var[S], of the Brownian Bridge.
         """
         return self.t*(self.T-self.t)/self.T
-    
-    def plot(self, plot_expected: bool=False, return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Brownian Bridge.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths(), expected_path=expected_path, return_fig_object=return_fig_object)
 
 
 
@@ -280,7 +239,7 @@ class FellerSquareRootProcess(StochasticProcessInterface):
                 s[i+1,:] = np.random.noncentral_chisquare(d, delta, (1, self.n_paths))*k
         else:
             raise ValueError("Provided method is not recognized. Use FellerSquareRootProcessMethod enum to select a supported method.")
-        return s
+        return s.transpose()
     
     def get_expectation(self) -> np.ndarray:
         """
@@ -294,14 +253,3 @@ class FellerSquareRootProcess(StochasticProcessInterface):
         """
         return ((self.sigma**2)*(np.exp(-self.alpha*self.t)-np.exp(-self.alpha*2*self.t))*self.s_0/self.alpha +
                 (self.sigma**2)*np.exp(-self.alpha*2*self.t)*(np.exp(self.alpha*self.t)-1)**2*self.mu/(2*self.alpha))
-    
-    def plot(self, method: FellerSquareRootProcessMethod=FellerSquareRootProcessMethod.EULER_MARUYAMA, plot_expected: bool=False,
-             return_fig_object: bool=False) -> Union[go.Figure, None]:
-        """
-        Plot of the random paths taken by the Feller Square-Root Process.
-        """
-        expected_path = None
-        if plot_expected:
-            expected_path = self.get_expectation()
-        return plot_stochastic_paths(paths=self.get_paths(method=method), expected_path=expected_path,
-                                     return_fig_object=return_fig_object)

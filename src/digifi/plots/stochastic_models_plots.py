@@ -1,8 +1,7 @@
 from typing import Union
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
-import plotly.express as px
+from .utilities import compare_array_len
 
 
 
@@ -10,12 +9,17 @@ def plot_stochastic_paths(paths: np.ndarray, expected_path: Union[np.ndarray, No
         """
         Plot of the random paths taken by a stochastic process.
         """
-        plotting_df = pd.DataFrame(paths)
+        time_steps = np.arange(start=0, stop=len(paths[0]), step=1)
+        plots = []
         if isinstance(expected_path, np.ndarray):
-            if len(expected_path)!=len(plotting_df):
-                raise ValueError("The length of argument expected_path does not equal to the length of the argument paths.")
-            plotting_df = pd.concat((plotting_df, pd.Series(expected_path, name="Expected Path")), axis=1)
-        fig = px.line(plotting_df, labels={"value":"Value of S", "variable":"Paths"})
+            compare_array_len(array_1=paths[0], array_2=expected_path, array_1_name="paths[0]", array_2_name="expected_path")
+            plots.append(go.Scatter(x=time_steps, y=expected_path, name="Expected Path"))
+        for i in range(len(paths)):
+             plots.append(go.Scatter(x=time_steps, y=paths[i]))
+        # Relocate expected path to be the last one displayed
+        plots.append(plots.pop(0))
+        layout = go.Layout(title = "Stochastic Simulation", yaxis = dict(title="Value of S"), xaxis = dict(title="Time Step"))
+        fig = go.Figure(data=plots, layout=layout)
         if bool(return_fig_object):
             return fig
         else:

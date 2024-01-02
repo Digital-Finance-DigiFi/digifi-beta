@@ -1,4 +1,3 @@
-from typing import Union
 import abc
 from dataclasses import dataclass
 from enum import Enum
