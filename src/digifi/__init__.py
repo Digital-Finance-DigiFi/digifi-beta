@@ -60,7 +60,7 @@ from .technical_indicators.technical_indicators import (ema, sma, macd, bollinge
 # Probability distributions
 
 from .probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionStruct,
-                                                ProbabilityDistributionInterface)
+                                                ProbabilityDistributionInterface, skewness, kurtosis)
 
 from .probability_distributions.discrete_probability_distributions import (BernoulliDistribution, BinomialDistribution,
                                                                            DiscreteUniformDistribution, PoissonDistribution)
@@ -83,6 +83,13 @@ from .pseudo_random_generators.standard_normal_distribution_generators import (S
                                                                                StandardNormalMarsagliaMethodPseudoRandomNumberGenerator,
                                                                                StandardNormalZigguratAlgorithmPseudoRandomNumberGenerator)
 
+# Portfolio applications
+
+from .portfolio_applications.general import (ReturnsMethod, ArrayRetrunsType, PortfolioInstrumentStruct, prices_to_returns,
+                                             returns_average, returns_std, returns_variance, PortfolioInterface)
+
+from .portfolio_applications.portfolio_management import (Portfolio, InstrumentsPortfolio)
+
 # Market making
 
 from .market_making.order_book import (volume_imbalance)
@@ -98,3 +105,5 @@ from .plots.technical_indicators_plots import (plot_sma, plot_ema, plot_macd, pl
 from .plots.pseudo_random_generators_plots import (plot_pdf, plot_2d_scattered_points, plot_3d_scattered_points)
 
 from .plots.financial_instuments_plots import (plot_option_payoff)
+
+from .plots.portfolio_application_plots import (plot_portfolio_cumulative_returns, plot_efficient_frontier)

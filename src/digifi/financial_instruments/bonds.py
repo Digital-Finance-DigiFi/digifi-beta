@@ -93,7 +93,7 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
     """
     def __init__(self, bond_type: BondType, principal: float, coupon_rate: float, discount_rate: Union[np.ndarray, float], maturity: float,
                  initial_price: float=0.0, compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
-                 identifier: Union[str, int]="0", first_coupon_time: float=1.0, coupon_growth_rate: float=0.0,
+                 identifier: str="0", first_coupon_time: float=1.0, coupon_growth_rate: float=0.0,
                  inflation_rate: float=0.0) -> None:
         # TODO: Add convertible, callable and puttable bonds
         # Bond class parameters

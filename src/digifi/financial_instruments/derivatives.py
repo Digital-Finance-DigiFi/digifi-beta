@@ -204,7 +204,7 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, Futur
     """
     def __init__(self, contract_price: float, delivery_price: float, discount_rate: float, maturity: float, initial_spot_price: float,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
-                 identifier: Union[str, int]="0", contract_type: ContractType=ContractType.FUTURES) -> None:
+                 identifier: str="0", contract_type: ContractType=ContractType.FUTURES) -> None:
         # FuturesContract class parameters
         self.compounding_type = compounding_type
         self.compounding_frequency = int(compounding_frequency)
@@ -282,7 +282,7 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
     def __init__(self, asset_price: float, strike_price: float, discount_rate: float, time_to_maturity: float, sigma: float, initial_option_price: float=0.0,
                  option_type: OptionType=OptionType.EUROPEAN, payoff_type: OptionPayoffType=OptionPayoffType.CALL,
                  option_pricing_method: OptionPricingMethod=OptionPricingMethod.BINOMIAL,
-                 dividend_yield: float=0.0, identifier: Union[str, int]="0") -> None:
+                 dividend_yield: float=0.0, identifier: str="0") -> None:
         # Option class parameters
         self.option_pricing_method = option_pricing_method
         if (option_pricing_method==OptionPricingMethod.BLACK_SCHOLES) and (option_type!=OptionType.EUROPEAN):
@@ -390,7 +390,7 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
         d_2 = d_1 - self.sigma*np.sqrt(self.time_to_maturity)
         return {"d_1":d_1, "d_2":d_2}
     
-    def european_option_black_scholes_value(self) -> float:
+    def __european_option_black_scholes_value(self) -> float:
         """
         Value of the European option evaluated using Black-Scholes formula.
         """
@@ -483,7 +483,7 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
     def present_value(self, lattice_model_n_steps: int=500) -> float:
         # Black-Scholes solution only is applicable to European options by constructor limitation
         if self.option_pricing_method==OptionPricingMethod.BLACK_SCHOLES:
-            return self.european_option_black_scholes_value()
+            return self.__european_option_black_scholes_value()
         # Translation of OptionPayoffType to LatticeModelPayoffType
         match self.payoff_type:
             case OptionPayoffType.CALL:

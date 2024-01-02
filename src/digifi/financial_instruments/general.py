@@ -33,7 +33,7 @@ class FinancialInstrumentStruct:
     """
     instrument_type: FinancialInstrumentType
     asset_class: FinancialInstrumentAssetClass
-    identifier: Union[str, int]
+    identifier: str
 
 
 
