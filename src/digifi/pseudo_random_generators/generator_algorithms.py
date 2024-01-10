@@ -19,9 +19,9 @@ def accept_reject_method(f_x: Callable, g_x: Callable, Y_sample: np.ndarray, M: 
 
 
 
-def inverse_transformation_method() -> np.ndarray:
-    # TODO: Add inverse transform method
-    pass
+def inverse_transform_method(lambda_param: float, sample_size: int, seed: int) -> np.ndarray: #exponential
+    uniform_samples = FibonacciPseudoRandomNumberGenerator(seed=seed, sample_size=sample_size).generate()
+    return -np.log(1 - uniform_samples) / lambda_param
 
 
 

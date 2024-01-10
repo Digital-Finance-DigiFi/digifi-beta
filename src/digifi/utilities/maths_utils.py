@@ -44,12 +44,20 @@ def erf(n: float, terms: int=20) -> float:
 def numerical_solver():
     """
     Numerical solver
+    https://math.stackexchange.com/questions/3642041/what-is-the-function-fsolve-in-python-doing-mathematically
+    https://github.com/scipy/scipy/blob/d0a431ac40a47fa849a9db5884b5e5b88069f5ee/scipy/optimize/minpack.py#L46
+    extremely hard to imeplement without the actual source code because the MINPACK's algortihm is very complex which
+    would take too much time to implement. My suggestion is to import scipy partially which could help with other functions as well
     """
+
 
 def incomplete_beta_function():
     """
-    Incomplete beta function
+    Incomplete beta function, continued fraction expansion
+    https://dlmf.nist.gov/8.17#E24
     """
+    
+
 
 def minimize():
     """
