@@ -23,8 +23,8 @@ class ArrayRetrunsType(enum.Enum):
 
 @dataclass
 class PortfolioInstrumentStruct:
-    instrument_price_array: np.ndarray
-    time_array: np.ndarray
+    portfolio_price_array: np.ndarray
+    portfolio_time_array: np.ndarray
 
 
 
@@ -92,6 +92,8 @@ class PortfolioInterface(metaclass=abc.ABCMeta):
                 callable(subclass.covariance) and
                 hasattr(subclass, "standard_deviation") and
                 callable(subclass.standard_deviation) and
+                hasattr(subclass, "autocorrelation") and
+                callable(subclass.autocorrelation) and
                 hasattr(subclass, "sharpe_ratio") and
                 callable(subclass.sharpe_ratio) and
                 hasattr(subclass, "maximize_sharpe_ratio") and
@@ -147,6 +149,13 @@ class PortfolioInterface(metaclass=abc.ABCMeta):
     def standard_deviation(self) -> float:
         """
         Calculate the standard deviation of the portfolio.
+        """
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def autocorrelation(self) -> np.ndarray:
+        """
+        Calculate the autocorrelation of portfolio returns.
         """
         raise NotImplementedError
     

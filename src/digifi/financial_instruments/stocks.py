@@ -4,11 +4,11 @@ from dataclasses import dataclass
 import numpy as np
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
-
+from src.digifi.portfolio_applications.general import PortfolioInstrumentStruct
 
 
 @dataclass
-class StockStruct(FinancialInstrumentStruct):
+class StockStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
     # TODO: Add constraint for only historical prices to be allowed to be accessed
     price_per_share: Union[np.ndarray, float]
     dividend: Union[np.ndarray, float]

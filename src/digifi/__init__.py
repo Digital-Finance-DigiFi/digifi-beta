@@ -1,4 +1,5 @@
 # TODO: Add references of algorithms to doctrings (Wikipedia reference is applicable, Original Source reference if applicable)
+
 # Utilities
 
 from .utilities.maths_utils import (factorial, n_choose_r)
@@ -24,7 +25,7 @@ from .lattice_based_models.trinomial_models import (trinomial_tree_nodes, trinom
 
 # Corporate finance
 
-from .corporate_finance.linear_regression_models import (CAPMSolutionType, CAPM)
+from .corporate_finance.linear_regression_models import (CAPMType, CAPMSolutionType, CAPM)
 
 # Financial instruments
 
@@ -104,6 +105,6 @@ from .plots.technical_indicators_plots import (plot_sma, plot_ema, plot_macd, pl
 
 from .plots.pseudo_random_generators_plots import (plot_pdf, plot_2d_scattered_points, plot_3d_scattered_points)
 
-from .plots.financial_instuments_plots import (plot_option_payoff)
+from .plots.financial_instuments_plots import (plot_option_payoff, plot_option_value_surface)
 
 from .plots.portfolio_application_plots import (plot_portfolio_cumulative_returns, plot_efficient_frontier)

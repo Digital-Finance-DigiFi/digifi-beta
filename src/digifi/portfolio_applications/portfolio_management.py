@@ -2,10 +2,13 @@ from typing import Union, List
 import copy
 import numpy as np
 import scipy.optimize as sc
-from src.digifi.portfolio_applications.general import (ReturnsMethod, ArrayRetrunsType, prices_to_returns, returns_average,
-                                                       PortfolioInterface)
 from src.digifi.utilities.general_utils import (verify_array, compare_array_len)
-# TODO: Add portfolio autocorrelation
+from src.digifi.portfolio_applications.general import (ReturnsMethod, ArrayRetrunsType, prices_to_returns, returns_average, PortfolioInterface)
+from src.digifi.financial_instruments.bonds import Bond
+from src.digifi.financial_instruments.derivatives import FuturesContract, Option
+from src.digifi.financial_instruments.rates_and_swaps import ForwardRateAgreement
+from src.digifi.financial_instruments.stocks import Stock
+# TODO: Implement bond coupon returns, dividends and fees
 
 
 
@@ -24,6 +27,10 @@ class Portfolio(PortfolioInterface):
     
     def __select_test_asset(self, assets: dict[np.ndarray]) -> (str, np.ndarray):
         return (list(assets.keys())[0], list(assets.values())[0])
+    
+    def __validate_portfolio_definition(self, weights: np.ndarray, assets: dict[np.ndarray]) -> None:
+        if len(weights)!=len(assets):
+            raise ValueError("The number of weights has to coincide with the number of assets provided.")
     
     def __tensorize_assets(self) -> dict[list[str], list[np.ndarray]]:
         """
@@ -53,8 +60,7 @@ class Portfolio(PortfolioInterface):
         verify_array(array=weights, array_name="weights")
         if sum(weights)!=1:
             raise ValueError("The weights must add up to 1.")
-        if len(weights)!=len(self.assets):
-            raise ValueError("The number of weights has to coincide with the number of assets provided.")
+        self.__validate_portfolio_definition(weights=weights, assets=self.assets)
         self.weights = weights
     
     def add_asset(self, new_asset_identifier: str, new_asset_prices: np.ndarray) -> None:
@@ -80,6 +86,7 @@ class Portfolio(PortfolioInterface):
         """
         Calculate returns for the provided operation type.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         tensorized_result = self.__tensorize_assets()
         assets_ids, assets_arrays = tensorized_result["assets_ids"], tensorized_result["assets_prices"]
         for i in range(len(assets_arrays)):
@@ -109,6 +116,7 @@ class Portfolio(PortfolioInterface):
         """
         Calculate the mean return of the portfolio.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
         tensorized_result = self.__tensorize_assets()
         assets_ids, assets_arrays = tensorized_result["assets_ids"], tensorized_result["assets_prices"]
@@ -120,6 +128,7 @@ class Portfolio(PortfolioInterface):
         """
         Calculate the covariance of the portfolio.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
         assets_ids, assets_returns = self.array_returns(operation_type=ArrayRetrunsType.RETURNS_OF_ASSETS, untensorize_result=False)
         covariance_matrix = np.cov(assets_returns, ddof=0)*n_periods
@@ -131,49 +140,59 @@ class Portfolio(PortfolioInterface):
         """
         Calculate the standard deviation of the portfolio.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
         covariance_matrix = self.covariance(n_periods=n_periods, untensorize_result=False)
         return np.sqrt(np.dot(self.weights.T, np.dot(covariance_matrix, self.weights)))
+    
+    def autocorrelation(self) -> np.ndarray:
+        """
+        Calculate the autocorrelation of portfolio returns.
+        """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
+        portfolio_returns = self.array_returns(operation_type=ArrayRetrunsType.PORTFOLIO_RETURNS)
+        autocorrelation = [1. if lag==0 else np.corrcoef(portfolio_returns[lag:], portfolio_returns[:-lag])[0][1] for lag in np.arange(start=0, stop=len(portfolio_returns)-1, step=1)]
+        return np.array(autocorrelation)
     
     def sharpe_ratio(self, r: float, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN) -> float:
         """
         Sharpe ratio = (portfolio returns - risk-free rate) / portfolio standard deviation
         Calculate the Sharpe ratio of the portfolio.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         r = float(r)
         n_periods = int(n_periods)
         portfolio_return = self.mean_return(n_periods=n_periods, method=method)
         portfolio_std = self.standard_deviation(n_periods=n_periods)
         return (portfolio_return - r) / portfolio_std
 
-    def __unsafe_change_weights(self, weights: np.ndarray) -> None:
+    def unsafe_change_weights(self, weights: np.ndarray) -> None:
         """
         Unsafe change of weights for the purpose of numerical solution only. Does not check whether weights sum up to 1.
         """
         verify_array(array=weights, array_name="weights")
-        if len(weights)!=len(self.assets):
-            raise ValueError("The number of weights has to coincide with the number of assets provided.")
+        self.__validate_portfolio_definition(weights=weights, assets=self.assets)
         self.weights = weights
 
     def __proxy_sharpe_ratio(self, weights: np.ndarray, r: float, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN) -> float:
         """
         Helper method to define Sharpe ratio optimization in terms of weights.
         """
-        self.__unsafe_change_weights(weights=weights)
+        self.unsafe_change_weights(weights=weights)
         return -1*self.sharpe_ratio(r=r, n_periods=n_periods, method=method)
     
     def __proxy_mean_return(self, weights: np.ndarray, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN) -> float:
         """
         Helper method to define mean return in terms of weights.
         """
-        self.__unsafe_change_weights(weights=weights)
+        self.unsafe_change_weights(weights=weights)
         return self.mean_return(n_periods=n_periods, method=method)
     
     def __proxy_std(self, weights: np.ndarray, n_periods: int=252) -> float:
         """
         Helper method to define standard deviation optimization in terms of weights.
         """
-        self.__unsafe_change_weights(weights=weights)
+        self.unsafe_change_weights(weights=weights)
         return self.standard_deviation(n_periods=n_periods)
     
     def maximize_sharpe_ratio(self, r: float, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN,
@@ -181,6 +200,7 @@ class Portfolio(PortfolioInterface):
         """
         Find portfolio with maximum Sharpe ratio.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         r = float(r)
         n_periods = int(n_periods)
         n_assets = len(self.assets)
@@ -189,7 +209,7 @@ class Portfolio(PortfolioInterface):
         constraints = ({"type":"eq", "fun": lambda x: np.sum(x) - 1})
         result = sc.minimize(fun=self.__proxy_sharpe_ratio, x0=np.ones(n_assets)/n_assets, args=args, method="SLSQP", bounds=bounds,
                              constraints=constraints)
-        self.__unsafe_change_weights(weights=result["x"])
+        self.unsafe_change_weights(weights=result["x"])
         if verbose:
             print("Portfolio weights: {}".format(result["x"]))
             print("Maximum Sharpe ratio: {}".format(-1*result["fun"]))
@@ -199,6 +219,7 @@ class Portfolio(PortfolioInterface):
         """
         Find portfolio with lowest standard deviation.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
         n_assets = len(self.assets)
         args = (n_periods)
@@ -206,7 +227,7 @@ class Portfolio(PortfolioInterface):
         constraints = ({"type":"eq", "fun": lambda x: np.sum(x) - 1})
         result = sc.minimize(fun=self.__proxy_std, x0=np.ones(n_assets)/n_assets, args=args, method="SLSQP", bounds=bounds,
                              constraints=constraints)
-        self.__unsafe_change_weights(weights=result["x"])
+        self.unsafe_change_weights(weights=result["x"])
         if verbose:
             print("Portfolio weights: {}".format(result["x"]))
             print("Minimum standard deviation: {}".format(result["fun"]))
@@ -217,6 +238,7 @@ class Portfolio(PortfolioInterface):
         """
         Find risk level on the efficient frontier for a given target return.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         return_target = float(return_target)
         n_periods = int(n_periods)
         n_assets = len(self.assets)
@@ -226,7 +248,7 @@ class Portfolio(PortfolioInterface):
                        {"type":"eq", "fun": lambda x: np.sum(x) - 1})
         result = sc.minimize(fun=self.__proxy_std, x0=np.ones(n_assets)/n_assets, args=args, method="SLSQP", bounds=bounds,
                              constraints=constraints)
-        self.__unsafe_change_weights(weights=result["x"])
+        self.unsafe_change_weights(weights=result["x"])
         if verbose:
             print("Portfolio weights: {}".format(result["x"]))
             print("Efficient risk level: {}".format(result["fun"]))
@@ -237,6 +259,7 @@ class Portfolio(PortfolioInterface):
         """
         Calculate efficient frontier.
         """
+        self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         frontier_n_points = int(frontier_n_points)
         r = float(r)
         n_periods = int(n_periods)
@@ -259,10 +282,35 @@ class Portfolio(PortfolioInterface):
 
 
 
-class InstrumentsPortfolio(PortfolioInterface):
+class InstrumentsPortfolio(Portfolio):
     """
     Portfolio that consists of financial instuments that have PortfolioInstumentStruct defined for them.
     """
-    def __init__(self, instruments: List) -> None:
-        # TODO: Implement InstumentPortfolio and PortfolioInstrumentStruct for all financial instruments
-        pass
+    def __init__(self, instruments: List[Union[Bond, FuturesContract, Option, ForwardRateAgreement, Stock]], weights: np.ndarray) -> None:
+        assets = dict()
+        for instrument in instruments:
+            self.__verify_instrument(instrument=instrument, assets=assets)
+            assets[instrument.identifier] = instrument.portfolio_price_array
+        super().__init__(assets=assets, weights=weights)
+    
+    def __verify_instrument(self, instrument: Union[Bond, FuturesContract, Option, ForwardRateAgreement, Stock], assets: dict[np.ndarray]) -> None:
+        if hasattr(instrument, "portfolio_price_array") and hasattr(instrument, "identifier"):
+            if instrument.identifier in list(assets.keys()):
+                raise ValueError("An instrument with identifier {} already exists. Cannot overwrite it with the identifier of {}.".format(instrument.identifier, instrument))
+        else:
+            raise ValueError("Either portfolio_price_array or identifier argument is undefined.")
+
+    
+    def add_asset(self, new_instrument: Union[Bond, FuturesContract, Option, ForwardRateAgreement, Stock]) -> None:
+        """
+        Add asset to portfolio.
+        """
+        self.__verify_instrument(instrument=new_instrument, assets=self.assets)
+        super().add_asset(new_asset_identifier=new_instrument.identifier, new_asset_prices=new_instrument.portfolio_price_array)
+    
+    def remove_asset(self, instrument_identifier: str) -> None:
+        """
+        Remove asset from portfolio.
+        """
+        if instrument_identifier in list(self.assets.keys()):
+            del self.assets[instrument_identifier]

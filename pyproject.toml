@@ -25,7 +25,6 @@ dependencies = [
     "scipy>=1.11",
 ]
 
-# TODO: Add links to a repo
-# [project.urls]
-# "Homepage" = "github_url"
-# "Bug Tracker" = "github_url/issues"
+[project.urls]
+"Homepage" = "https://github.com/Digital-Finance-DigiFi/digifi"
+"Bug Tracker" = "https://github.com/Digital-Finance-DigiFi/digifi/issues"

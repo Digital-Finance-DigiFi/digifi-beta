@@ -3,9 +3,11 @@ import abc
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
+from src.digifi.utilities.general_utils import compare_array_len
 from src.digifi.utilities.time_value_utils import (CompoundingType, Compounding)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
+from src.digifi.portfolio_applications.general import PortfolioInstrumentStruct
 from src.digifi.probability_distributions.continuous_probability_distributions import NormalDistribution
 from src.digifi.lattice_based_models.general import LatticeModelPayoffType
 from src.digifi.lattice_based_models.binomial_models import BrownianMotionBinomialModel
@@ -41,7 +43,7 @@ class OptionPricingMethod(Enum):
 
 
 @dataclass
-class FuturesContractStruct(FinancialInstrumentStruct):
+class FuturesContractStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
     contract_type: ContractType
     contract_price: float
     delivery_price: float
@@ -52,7 +54,7 @@ class FuturesContractStruct(FinancialInstrumentStruct):
 
 
 @dataclass
-class OptionStruct(FinancialInstrumentStruct):
+class OptionStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
     asset_price: float
     strike_price: float
     discount_rate: float
@@ -191,7 +193,8 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, Futur
     """
     def __init__(self, contract_price: float, delivery_price: float, discount_rate: float, maturity: float, initial_spot_price: float,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
-                 identifier: str="0", contract_type: ContractType=ContractType.FUTURES) -> None:
+                 identifier: str="0", contract_type: ContractType=ContractType.FUTURES, portfolio_price_array: np.ndarray=np.array([]),
+                 portfolio_time_array: np.ndarray=np.array([])) -> None:
         # FuturesContract class parameters
         self.compounding_type = compounding_type
         self.compounding_frequency = int(compounding_frequency)
@@ -205,7 +208,15 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, Futur
         # FinancialInstrumentStruct parameters
         self.instrument_type = FinancialInstrumentType.DERIVATIVE_INSTRUMENT
         self.asset_class = FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT
-        self.identifier = identifier
+        self.identifier = str(identifier)
+        # PortfolioInstrumentStruct parameters
+        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
+                          array_2_name="portfolio_time_array")
+        self.portfolio_price_array = portfolio_price_array
+        self.portfolio_time_array = portfolio_price_array
+    
+    def __str__(self):
+        return f"Futures Contract: {self.identifier}"
     
     def __latest_spot_price(self, current_price: Union[float, None]=None) -> float:
         """
@@ -269,7 +280,8 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
     def __init__(self, asset_price: float, strike_price: float, discount_rate: float, time_to_maturity: float, sigma: float, initial_option_price: float=0.0,
                  option_type: OptionType=OptionType.EUROPEAN, payoff_type: OptionPayoffType=OptionPayoffType.CALL,
                  option_pricing_method: OptionPricingMethod=OptionPricingMethod.BINOMIAL,
-                 dividend_yield: float=0.0, identifier: str="0") -> None:
+                 dividend_yield: float=0.0, identifier: str="0", portfolio_price_array: np.ndarray=np.array([]),
+                 portfolio_time_array: np.ndarray=np.array([])) -> None:
         # Option class parameters
         self.option_pricing_method = option_pricing_method
         if (option_pricing_method==OptionPricingMethod.BLACK_SCHOLES) and (option_type!=OptionType.EUROPEAN):
@@ -292,7 +304,15 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
         # FinancialInstrumentStruct parameters
         self.instrument_type = FinancialInstrumentType.DERIVATIVE_INSTRUMENT
         self.asset_class = FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT
-        self.identifier = identifier
+        self.identifier = str(identifier)
+        # PortfolioInstrumentStruct parameters
+        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
+                          array_2_name="portfolio_time_array")
+        self.portfolio_price_array = portfolio_price_array
+        self.portfolio_time_array = portfolio_price_array
+    
+    def __str__(self):
+        return f"Option: {self.identifier}"
     
     @staticmethod
     def call_payoff(s_t: Union[np.ndarray, float], k: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
@@ -485,3 +505,21 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
     
     def future_value(self) -> float:
         return self.present_value()*np.exp(self.discount_rate*self.time_to_maturity)
+    
+    def present_value_surface(self, start_price: float, stop_price: float, n_prices: int=100, n_timesteps: int=100,
+                              lattice_model_n_steps: int=100) -> dict:
+        lattice_model_n_steps = int(lattice_model_n_steps)
+        times_to_maturity = np.linspace(start=self.time_to_maturity, stop=0, num=int(n_timesteps))
+        price_array = np.linspace(start=float(start_price), stop=float(stop_price), num=int(n_prices))
+        option_pv_matrix = []
+        for i in range(n_timesteps):
+            option_pv_array = np.array([])
+            if i==n_timesteps-1:
+                option_pv_array = np.append(option_pv_array, self.payoff(s_t=price_array, k=self.strike_price))
+            else:
+                self.time_to_maturity = times_to_maturity[i]
+                for j in range(n_timesteps):
+                    self.asset_price = price_array[j]
+                    option_pv_array = np.append(option_pv_array, self.present_value(lattice_model_n_steps=lattice_model_n_steps))
+            option_pv_matrix.append(option_pv_array)
+        return {"times_to_maturity":times_to_maturity, "price_array":price_array, "option_pv_matrix":np.array(option_pv_matrix)}

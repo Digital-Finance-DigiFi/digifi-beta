@@ -7,6 +7,7 @@ from src.digifi.utilities.general_utils import compare_array_len
 from src.digifi.utilities.time_value_utils import (Cashflow, CompoundingType, Compounding, internal_rate_of_return)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
+from src.digifi.portfolio_applications.general import PortfolioInstrumentStruct
 
 
 
@@ -21,7 +22,7 @@ class BondType(Enum):
 
 
 @dataclass
-class BondStruct(FinancialInstrumentStruct):
+class BondStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
     principal: float
     coupon_rate: float
     discount_rate: Union[np.ndarray, float]
@@ -94,7 +95,7 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
     def __init__(self, bond_type: BondType, principal: float, coupon_rate: float, discount_rate: Union[np.ndarray, float], maturity: float,
                  initial_price: float=0.0, compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
                  identifier: str="0", first_coupon_time: float=1.0, coupon_growth_rate: float=0.0,
-                 inflation_rate: float=0.0) -> None:
+                 inflation_rate: float=0.0, portfolio_price_array: np.ndarray=np.array([]), portfolio_time_array: np.ndarray=np.array([])) -> None:
         # TODO: Add convertible, callable and puttable bonds
         # Bond class parameters
         self.bond_type = bond_type
@@ -111,7 +112,12 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
         # FinancialInstrumentStruct parameters
         self.instrument_type = FinancialInstrumentType.CASH_INSTRUMENT
         self.asset_class = FinancialInstrumentAssetClass.DEBT_BASED_INSTRUMENT
-        self.identifier = identifier
+        self.identifier = str(identifier)
+        # PortfolioInstrumentStruct parameters
+        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
+                          array_2_name="portfolio_time_array")
+        self.portfolio_price_array = portfolio_price_array
+        self.portfolio_time_array = portfolio_price_array
         # Derived parameters
         self.time_step = float(1/compounding_frequency)
         self.coupon = self.principal*self.coupon_rate/self.compounding_frequency
@@ -128,6 +134,9 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
                 raise ValueError("For the argument discount_rate of type np.ndarray, its length must be {} based on the given time parameters provided".format(len(self.cashflow)))
         else:
             raise TypeError("The argument discount_rate must be either of type float or np.ndarray.")
+    
+    def __str__(self):
+        return f"Bond: {self.identifier}"
 
     def present_value(self) -> float:
         present_value = 0
