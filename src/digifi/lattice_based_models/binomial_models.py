@@ -29,9 +29,9 @@ def binomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) ->
 def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u: float, n_steps: int,
                    payoff_timesteps: Union[List[bool], None]=None) -> float:
     """
-    General binomial model with custom payoff.
-    The function assumes that there is a payoff at the final time step.
-    This implementation does not discount future cashflows.
+    General binomial model with custom payoff.\n
+    The function assumes that there is a payoff at the final time step.\n
+    This function does not discount future cashflows.\n
     """
     start_point = float(start_point)
     u = float(u)
@@ -49,6 +49,8 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
     elif isinstance(payoff_timesteps, list):
         if len(payoff_timesteps)!=n_steps:
             raise ValueError("The argument payoff_timesteps should be of length n_steps.")
+        if all(isinstance(value, bool) for value in payoff_timesteps) is False:
+            raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
     else:
         raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
     # Binomial model
@@ -136,6 +138,8 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         elif isinstance(payoff_timesteps, list):
             if len(payoff_timesteps)!=self.n_steps:
                 raise ValueError("The argument payoff_timesteps should be of length n_steps.")
+            if all(isinstance(value, bool) for value in payoff_timesteps) is False:
+                raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
         else:
             raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
         p_u = (np.exp(-self.q*self.dt) - np.exp(-self.r*self.dt)*self.d)/(self.u-self.d)

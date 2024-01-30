@@ -1,7 +1,7 @@
 from enum import Enum
 import numpy as np
 import scipy
-from src.digifi.utilities.general_utils import compare_array_len
+from src.digifi.utilities.general_utils import (compare_array_len, type_check)
 
 
 
@@ -24,11 +24,10 @@ class CAPM:
     Contains methods for finding asset beta and predicting expected asset returns with the given beta.
     """
     def __init__(self, capm_type: CAPMType, solution_type: CAPMSolutionType=CAPMSolutionType.LINEAR_REGRESSION) -> None:
-        if isinstance(capm_type, CAPMType) is False:
-            raise TypeError("The argument capm_type must be of CAPMType type.")
-        if isinstance(solution_type, CAPMSolutionType) is False:
-            raise TypeError("The argument solution_type must be of CAPMSolutionType type.")
-        if (capm_type!=CAPMType.STANDARD) and ():
+        # Arguments validation
+        type_check(value=capm_type, type_=CAPMType, value_name="capm_type")
+        type_check(value=solution_type, type_=CAPMSolutionType, value_name="solution_type")
+        if (capm_type!=CAPMType.STANDARD) and (solution_type==CAPMSolutionType.COVARIANCE):
             raise ValueError("The covariance solution method is only available for the standard CAPM")
         self.capm_type = capm_type
         self.solution_type = solution_type

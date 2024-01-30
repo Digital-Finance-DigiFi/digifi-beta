@@ -1,11 +1,11 @@
-from typing import Union, List
+from typing import (Union, List)
 import copy
 import numpy as np
 import scipy.optimize as sc
-from src.digifi.utilities.general_utils import (verify_array, compare_array_len)
+from src.digifi.utilities.general_utils import (compare_array_len, type_check)
 from src.digifi.portfolio_applications.general import (ReturnsMethod, ArrayRetrunsType, prices_to_returns, returns_average, PortfolioInterface)
 from src.digifi.financial_instruments.bonds import Bond
-from src.digifi.financial_instruments.derivatives import FuturesContract, Option
+from src.digifi.financial_instruments.derivatives import (FuturesContract, Option)
 from src.digifi.financial_instruments.rates_and_swaps import ForwardRateAgreement
 from src.digifi.financial_instruments.stocks import Stock
 # TODO: Implement bond coupon returns, dividends and fees
@@ -57,7 +57,7 @@ class Portfolio(PortfolioInterface):
         """
         Update weights of the portfolio assets.
         """
-        verify_array(array=weights, array_name="weights")
+        type_check(value=weights, type_=np.ndarray, value_name="weights")
         if sum(weights)!=1:
             raise ValueError("The weights must add up to 1.")
         self.__validate_portfolio_definition(weights=weights, assets=self.assets)
@@ -170,7 +170,7 @@ class Portfolio(PortfolioInterface):
         """
         Unsafe change of weights for the purpose of numerical solution only. Does not check whether weights sum up to 1.
         """
-        verify_array(array=weights, array_name="weights")
+        type_check(value=weights, type_=np.ndarray, value_name="weights")
         self.__validate_portfolio_definition(weights=weights, assets=self.assets)
         self.weights = weights
 
@@ -299,7 +299,6 @@ class InstrumentsPortfolio(Portfolio):
                 raise ValueError("An instrument with identifier {} already exists. Cannot overwrite it with the identifier of {}.".format(instrument.identifier, instrument))
         else:
             raise ValueError("Either portfolio_price_array or identifier argument is undefined.")
-
     
     def add_asset(self, new_instrument: Union[Bond, FuturesContract, Option, ForwardRateAgreement, Stock]) -> None:
         """

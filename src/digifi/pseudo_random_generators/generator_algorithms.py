@@ -1,6 +1,6 @@
 from typing import Callable
 import numpy as np
-from src.digifi.utilities.general_utils import verify_array, compare_array_len
+from src.digifi.utilities.general_utils import (compare_array_len, type_check)
 from src.digifi.probability_distributions.continuous_probability_distributions import NormalDistribution
 from src.digifi.pseudo_random_generators.uniform_distribution_generators import FibonacciPseudoRandomNumberGenerator
 
@@ -46,7 +46,7 @@ def marsaglia_method(max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=
 
 def ziggurat_algorithm(x_guess: np.ndarray, sample_size: int=10_000, max_iterations: int=1_000, seed_1: int=78_321,
                        seed_2: int=32_456) -> np.ndarray:
-    verify_array(array=x_guess, array_name="x")
+    type_check(value=x_guess, type_=np.ndarray, value_name="x")
     sample_size = int(sample_size)
     max_iterations = int(max_iterations)
     seed_1 = int(seed_1)
@@ -59,7 +59,6 @@ def ziggurat_algorithm(x_guess: np.ndarray, sample_size: int=10_000, max_iterati
         U_2 = FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=len(x_guess)).generate()
         i = 0
         while (Z[j]==1) and i<max_iterations:
-            # TODO: Replace randint with custom pseudo-random integer generator
             i = np.random.randint(0, len(x_guess))
             x = U_1[i]*x_guess[i]
             if abs(x)<x_guess[i-1]:

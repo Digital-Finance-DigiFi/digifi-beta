@@ -1,12 +1,11 @@
 from typing import Union
 import numpy as np
 from scipy.special import erf
-from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionStruct,
-                                                          ProbabilityDistributionInterface)
+from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionInterface)
 
 
 
-class ContinuousUniformDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class ContinuousUniformDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of continuous uniform distribution.
     """
@@ -42,7 +41,7 @@ class ContinuousUniformDistribution(ProbabilityDistributionStruct, ProbabilityDi
 
 
 
-class NormalDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class NormalDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of normal distribution.
     """

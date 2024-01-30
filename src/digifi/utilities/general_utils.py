@@ -1,13 +1,5 @@
+from typing import Any
 import numpy as np
-
-
-
-def verify_array(array: np.ndarray, array_name: str="price_array") -> None:
-    """
-    Verify that the array provided is a numpy.ndarray array.
-    """
-    if isinstance(array, np.ndarray)==False:
-        raise TypeError("The argument {} must be of numpy.ndarray type.".format(array_name))
 
 
 
@@ -15,8 +7,8 @@ def compare_array_len(array_1: np.ndarray, array_2: np.ndarray, array_1_name: st
     """
     Compare that the two arrays provided are of the same length, while also verifying that both arrays are of numpy.ndarray type.
     """
-    verify_array(array_1)
-    verify_array(array_2)
+    type_check(value=array_1, type_=np.ndarray, value_name=array_1_name)
+    type_check(value=array_2, type_=np.ndarray, value_name=array_2_name)
     if len(array_1)!=len(array_2):
         raise ValueError("The length of {0} and {1} do not coincide.".format(array_1_name, array_2_name))
 
@@ -27,8 +19,37 @@ def rolling(array: np.ndarray, window: int) -> np.ndarray:
     Rolling window over an array.
     """
     window = int(window)
-    verify_array(array=array, array_name="array")
+    type_check(value=array, type_=np.ndarray, value_name="array")
     shape = array.shape[:-1] + (array.shape[-1]-window+1, window)
     strides = array.strides + (array.strides[-1],)
     return np.lib.stride_tricks.as_strided(array, shape=shape, strides=strides)
+
+
+
+def type_check(value: Any, type_: type[Any], value_name: str) -> None:
+    """
+    Perform dynamic type check for a value to be of a defined type.
+    """
+    if isinstance(value, type_) is False:
+        raise TypeError("The argument {} must be of {} type.".format(str(value_name), type_))
+
+
+
+class DataClassValidation:
+    def __post_init__(self) -> None:
+        """
+        Validate types and fields in dataclass instances.\n
+        If dataclass instance has custom validation methods in the format validate_<field_name>,
+        where <field_name> is replaced with the name of the field - it will be checked using the custom validation method.
+        """
+        # Validate types
+        for k, v in self.__annotations__.items():
+            try:
+                assert isinstance(getattr(self, k), v)
+            except AssertionError:
+                raise TypeError("The argument {} must be of {} type.".format(k, v))
+        # Apply custom validation methods inside dataclass definition
+        for name, field in self.__dataclass_fields__.items():
+            if (method := getattr(self, f"validate_{name}", None)):
+                setattr(self, name, method(getattr(self, name), field=field))
     

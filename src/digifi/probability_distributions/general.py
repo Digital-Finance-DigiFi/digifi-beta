@@ -1,9 +1,8 @@
 from typing import Union
 import abc
 from enum import Enum
-from dataclasses import dataclass
 import numpy as np
-from src.digifi.utilities.general_utils import verify_array
+from src.digifi.utilities.general_utils import type_check
 
 
 
@@ -11,22 +10,6 @@ class ProbabilityDistributionType(Enum):
     DISCRETE_DISTRIBUTION = 1
     CONTINUOUS_DISTRIBUTION = 2
 
-
-
-@dataclass
-class ProbabilityDistributionStruct:
-    """
-    Struct with general probability distribution properties.
-    """
-    distribution_type: ProbabilityDistributionType
-    mean: float
-    median: float
-    mode: float
-    variance: float
-    skewness: float
-    excess_kurtosis: float
-    entropy: float
-    
 
 
 class ProbabilityDistributionInterface(metaclass=abc.ABCMeta):
@@ -80,7 +63,7 @@ def skewness(array: np.ndarray) -> float:
     Skewness = \\frac{E[(X-\mu)^{3}]}{(E[(X-\mu)^{2}])^{\\frac{3}{2}}}.
     Fisher-Pearson moment coefficient of skewness.
     """
-    verify_array(array=array, array_name="array")
+    type_check(value=array, type_=np.ndarray, value_name="array")
     difference = array - np.mean(array)
     return np.mean(difference**3)/(np.mean(difference**2)**(3/2))
 
@@ -90,6 +73,6 @@ def kurtosis(array: np.ndarray) -> float:
     """
     Kurtosis = \\frac{E[(X-\mu)^{4}]}{(E[(X-\mu)^{2}])^{2}}.
     """
-    verify_array(array=array, array_name="array")
+    type_check(value=array, type_=np.ndarray, value_name="array")
     difference = array - np.mean(array)
     return np.mean(difference**2)/(np.mean(difference**2)**2)

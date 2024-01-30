@@ -1,7 +1,7 @@
 from typing import Union
 import numpy as np
 import plotly.graph_objects as go
-from .utilities import verify_array
+from .utilities import type_check
 
 
 
@@ -9,7 +9,7 @@ def plot_portfolio_cumulative_returns(cumulative_portfolio_returns: np.ndarray, 
     """
     Plot the cumulative return of the portfolio.
     """
-    verify_array(array=cumulative_portfolio_returns, array_name="cumulative_portfolio_returns")
+    type_check(value=cumulative_portfolio_returns, type_=np.ndarray, value_name="cumulative_portfolio_returns")
     time_steps = np.arange(start=0, stop=len(cumulative_portfolio_returns), step=1)
     fig = go.Figure(go.Scatter(x=time_steps, y=100*cumulative_portfolio_returns, name="Portfolio Performance (%)"))
     if bool(return_fig_object):

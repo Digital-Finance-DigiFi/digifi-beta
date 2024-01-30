@@ -2,17 +2,29 @@ from typing import Union
 import abc
 from dataclasses import dataclass
 import numpy as np
+from src.digifi.utilities.general_utils import (compare_array_len, DataClassValidation)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
 from src.digifi.portfolio_applications.general import PortfolioInstrumentStruct
 
 
-@dataclass
-class StockStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
+
+@dataclass(slots=True)
+class StockStruct(DataClassValidation):
     # TODO: Add constraint for only historical prices to be allowed to be accessed
     price_per_share: Union[np.ndarray, float]
     dividend: Union[np.ndarray, float]
     earnings_per_share: Union[np.ndarray, float]
+
+    def __post_init__(self) -> None:
+        if isinstance(self.price_per_share, float) and isinstance(self.dividend, float) and isinstance(self.earnings_per_share, float):
+            pass
+        elif isinstance(self.price_per_share, float) and isinstance(self.dividend, float) and isinstance(self.earnings_per_share, float):
+            compare_array_len(array_1=self.price_per_share, array_2=self.dividend, array_1_name="price_per_share", array_2_name="dividend")
+            compare_array_len(array_1=self.price_per_share, array_2=self.earning_per_share,
+                              array_1_name="price_per_share", array_2_name="earning_per_share")
+        else:
+            raise TypeError("The arguments price_per_share, dividend and earnings_per_share must all be either float or np.ndarray type.")
 
 
 
@@ -95,7 +107,7 @@ class StockInteraface(metaclass=abc.ABCMeta):
     
 
 
-class Stock(FinancialInstrumentInterface, StockStruct, StockInteraface):
+class Stock(FinancialInstrumentInterface, StockInteraface):
     """
     Stock financial instrument and its methods.
     """

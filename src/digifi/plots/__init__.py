@@ -1,4 +1,4 @@
-from .utilities import (verify_array, compare_array_len)
+from .utilities import (type_check, compare_array_len)
 
 from .general_plots import (plot_candlestick_chart)
 

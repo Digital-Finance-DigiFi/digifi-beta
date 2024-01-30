@@ -1,5 +1,6 @@
-from typing import List, Callable, Union
+from typing import (List, Callable, Union)
 import numpy as np
+from src.digifi.utilities.general_utils import type_check
 from src.digifi.lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
 
 
@@ -30,10 +31,12 @@ def trinomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -
 def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u: float, p_d: float, n_steps: int,
                    payoff_timesteps: Union[List[bool], None]=None) -> float:
     """
-    General trinomial model with custom payoff.
-    The function assumes that there is a payoff at the final time step.
-    This implementation does not discount future cashflows.
+    General trinomial model with custom payoff.\n
+    The function assumes that there is a payoff at the final time step.\n
+    This function does not discount future cashflows.\n
     """
+    #Arguments validation
+    type_check(value=payoff, type_=Callable, value_name="payoff")
     start_point = float(start_point)
     # Movements
     u = float(u)
@@ -57,6 +60,8 @@ def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_
     elif isinstance(payoff_timesteps, list):
         if len(payoff_timesteps)!=n_steps:
             raise ValueError("The argument payoff_timesteps should be of length n_steps.")
+        if all(isinstance(value, bool) for value in payoff_timesteps) is False:
+            raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
     else:
         raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
     # Trinomial model
@@ -82,6 +87,8 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
     """
     def __init__(self, s_0: float, k: float, T: float, r: float, sigma: float, q: float, n_steps: int,
                  payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.CALL) -> None:
+        # Arguments validation
+        type_check(value=payoff_type, type_=LatticeModelPayoffType, value_name="payoff_type")
         self.s_0 = float(s_0)
         self.k = float(k)
         self.T = float(T)
@@ -94,8 +101,6 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
                 self.payoff: Callable = self.call_payoff
             case LatticeModelPayoffType.PUT:
                 self.payoff: Callable = self.put_payoff
-            case _:
-                raise ValueError("The argument payoff_type must be of BinomialModelPayoffType type.")
         self.dt = T/n_steps
         if self.dt>=2*(sigma**2)/((r-q)**2):
             raise ValueError("With the given arguments, the condition \Delta t<1\\frac\{\sigma^\{2\}\}\{(r-q)^\{2\}\} is not satisfied.")

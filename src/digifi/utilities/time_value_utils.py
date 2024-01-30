@@ -2,7 +2,7 @@ from typing import Union
 import numpy as np
 from scipy.optimize import fsolve
 from enum import Enum
-from src.digifi.utilities.general_utils import compare_array_len
+from src.digifi.utilities.general_utils import (compare_array_len, type_check)
 
 
 
@@ -25,10 +25,8 @@ class Cashflow:
         if isinstance(cashflow, np.ndarray):
             # Time array is provided
             if isinstance(time_array, np.ndarray):
-                if len(time_array)!=len(cashflow):
-                    raise TypeError("The length of cashflow and time_array do not match.")
-                else:
-                    self.time_array = time_array
+                compare_array_len(array_1=cashflow, array_2=time_array, array_1_name="cashflow", array_2_name="time_array")
+                self.time_array = time_array
             # Time array is generated
             else:
                 self.time_array = self.__time_array(cashflow=cashflow, final_time=float(final_time), start_time=float(start_time),
@@ -38,7 +36,9 @@ class Cashflow:
         else:
             # Time array is provided
             if isinstance(time_array, np.ndarray):
+                compare_array_len(array_1=cashflow, array_2=time_array, array_1_name="cashflow", array_2_name="time_array")
                 self.time_array = time_array
+            # Time array is generated
             else:
                 self.time_array = self.__time_array(cashflow=float(cashflow), final_time=float(final_time), start_time=float(start_time),
                                                     time_step=float(time_step))
@@ -162,6 +162,8 @@ class Compounding:
     Compounding term is defined as the discounting terms for future cashflows.
     """
     def __init__(self, rate: float, compounding_type: CompoundingType=CompoundingType.CONTINUOUS, compounding_frequency: int=1) -> None:
+        # Arguments validation
+        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
         self.rate = float(rate)
         self.compounding_type = compounding_type
         if (compounding_type==CompoundingType.PERIODIC) and (compounding_frequency<=0):
@@ -225,8 +227,10 @@ class Perpetuity:
     """
     A series of fixed income cashflows paid out each time step forever.
     """
-    def __init__(self, perpetuity_cashflow: float, rate: float, perpetuity_growth_rate: float=0,
+    def __init__(self, perpetuity_cashflow: float, rate: float, perpetuity_growth_rate: float=0.0,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC) -> None:
+        # Arguments validation
+        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
         if rate<=perpetuity_growth_rate:
             raise ValueError("The rate cannot be smaller than the perpetuity growth rate.")
         self.perpetuity_cashflow = float(perpetuity_cashflow)
@@ -235,21 +239,21 @@ class Perpetuity:
         self.compounding_type = compounding_type
 
     def present_value(self) -> float:
-        if self.compounding_type==CompoundingType.PERIODIC:
-            pv_perpetuity = self.perpetuity_cashflow/(self.rate-self.perpetuity_growth_rate)
-        else:
-            pv_perpetuity = self.perpetuity_cashflow*np.exp(-self.perpetuity_growth_rate)/(np.exp(self.rate-self.perpetuity_growth_rate)-1)
-        return pv_perpetuity
+        match self.compounding_type:
+            case CompoundingType.PERIODIC:
+                return self.perpetuity_cashflow / (self.rate-self.perpetuity_growth_rate)
+            case CompoundingType.CONTINUOUS:
+                return self.perpetuity_cashflow * np.exp(-self.perpetuity_growth_rate) / (np.exp(self.rate-self.perpetuity_growth_rate) - 1)
     
     def net_present_value(self, initial_cashflow: float) -> float:
         return -initial_cashflow + self.present_value()
     
     def future_value(self, final_time: float) -> float:
-        if self.compounding_type==CompoundingType.PERIODIC:
-            fv_perpetuity = self.present_value()*(1+self.rate)**(final_time)
-        else:
-            fv_perpetuity = self.present_value*np.exp(self.rate*final_time)
-        return fv_perpetuity
+        match self.compounding_type:
+            case CompoundingType.PERIODIC:
+                return self.present_value() * (1+self.rate)**(final_time)
+            case CompoundingType.CONTINUOUS:
+                return self.present_value * np.exp(self.rate*final_time)
 
 
 
@@ -257,8 +261,10 @@ class Annuity:
     """
     A series of fixed income cashflows paid out for a specified number of time periods periods.
     """
-    def __init__(self, annuity_cashflow: float, rate: float, final_time: float, annuity_growth_rate: float=0,
+    def __init__(self, annuity_cashflow: float, rate: float, final_time: float, annuity_growth_rate: float=0.0,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC) -> None:
+        # Arguments validation
+        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
         if rate<=annuity_growth_rate:
             raise ValueError("The rate cannot be smaller than the annuity growth rate.")
         self.annuity_cashflow = float(annuity_cashflow)
@@ -268,19 +274,19 @@ class Annuity:
         self.compounding_type = compounding_type
 
     def present_value(self) -> float:
-        if self.compounding_type==CompoundingType.PERIODIC:
-            pv_annuity = self.annuity_cashflow/(self.rate-self.annuity_growth_rate)*(1-((1+self.annuity_growth_rate)/(1+self.rate))**self.final_time)
-        else:
-            pv_annuity = (self.annuity_cashflow*np.exp(-self.annuity_growth_rate)/(np.exp(self.rate-self.annuity_growth_rate)-1)*
-                          (1-np.exp((self.annuity_growth_rate-self.rate)*self.final_time)))
-        return pv_annuity
+        match self.compounding_type:
+            case CompoundingType.PERIODIC:
+                return self.annuity_cashflow / (self.rate-self.annuity_growth_rate) * (1-((1+self.annuity_growth_rate)/(1+self.rate))**self.final_time)
+            case CompoundingType.CONTINUOUS:
+                return (self.annuity_cashflow * np.exp(-self.annuity_growth_rate) / (np.exp(self.rate-self.annuity_growth_rate)-1)*
+                        (1-np.exp((self.annuity_growth_rate-self.rate)*self.final_time)))
     
     def net_present_value(self, initial_cashflow: float) -> float:
         return -initial_cashflow + self.present_value()
     
     def future_value(self) -> float:
-        if self.compounding_type==CompoundingType.PERIODIC:
-            fv_annuity = self.present_value()*(1+self.rate)**(self.final_time)
-        else:       
-            fv_annuity = self.present_value()*np.exp(self.rate*self.final_time)
-        return fv_annuity
+        match self.compounding_type:
+            case CompoundingType.PERIODIC:
+                return self.present_value() * (1+self.rate)**(self.final_time)
+            case CompoundingType.CONTINUOUS:
+                return self.present_value() * np.exp(self.rate*self.final_time)

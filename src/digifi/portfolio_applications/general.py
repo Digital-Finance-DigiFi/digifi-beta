@@ -3,7 +3,7 @@ import abc
 import enum
 from dataclasses import dataclass
 import numpy as np
-from src.digifi.utilities.general_utils import verify_array
+from src.digifi.utilities.general_utils import (compare_array_len, type_check, DataClassValidation)
 
 
 
@@ -21,10 +21,17 @@ class ArrayRetrunsType(enum.Enum):
 
 
 
-@dataclass
-class PortfolioInstrumentStruct:
+@dataclass(slots=True)
+class PortfolioInstrumentStruct(DataClassValidation):
+    """
+    Struct with data to be used inside an InstumentsPortfolio.
+    """
     portfolio_price_array: np.ndarray
     portfolio_time_array: np.ndarray
+
+    def __post_init__(self) -> None:
+        compare_array_len(array_1=self.portfolio_price_array, array_2=self.portfolio_time_array,
+                          array_1_name="portfolio_prices_array", array_2_name="portfolio_time_array")
 
 
 
@@ -32,7 +39,7 @@ def prices_to_returns(price_array: np.ndarray) -> np.ndarray:
     """
     Convert an array of prices to an array of returns.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     return np.diff(a=price_array)/price_array[1:]
 
 
@@ -41,6 +48,7 @@ def returns_average(price_array: np.ndarray, method: ReturnsMethod, n_periods: i
     """
     Calculate the average return of a price array.
     """
+    type_check(value=method, type_=ReturnsMethod, value_name="method")
     n_periods = int(n_periods)
     returns = prices_to_returns(price_array=price_array)
     match method:
@@ -50,8 +58,6 @@ def returns_average(price_array: np.ndarray, method: ReturnsMethod, n_periods: i
         case ReturnsMethod.ESTIMATED_FROM_TOTAL_RETURN:
             compounded_return = (1 + returns).prod()
             return compounded_return**(n_periods/len(returns)) - 1
-        case _:
-            raise ValueError("The argument method must be of ReturnsMethod type.")
 
 
 

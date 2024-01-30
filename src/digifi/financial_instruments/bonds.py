@@ -3,7 +3,7 @@ import abc
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from src.digifi.utilities.general_utils import compare_array_len
+from src.digifi.utilities.general_utils import (compare_array_len, type_check, DataClassValidation)
 from src.digifi.utilities.time_value_utils import (Cashflow, CompoundingType, Compounding, internal_rate_of_return)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
@@ -15,19 +15,25 @@ class BondType(Enum):
     ANNUITY_BOND = 1
     GROWING_ANNUITY_BOND = 2
     ZERO_COUPON_BOND = 3
-    CONVERTIBLE_BOND = 4
-    CALLABLE_BOND = 5
-    PUTTABLE_BOND = 6
+    # TODO: Add convertible, callable and puttable bonds
+    # CONVERTIBLE_BOND = 4
+    # CALLABLE_BOND = 5
+    # PUTTABLE_BOND = 6
 
 
 
-@dataclass
-class BondStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
+@dataclass(slots=True)
+class BondStruct(DataClassValidation):
     principal: float
     coupon_rate: float
     discount_rate: Union[np.ndarray, float]
     maturity: float
     initial_price: float
+
+    def validate_maturity(self, value: float, **_) -> float:
+        if value<0:
+            raise ValueError("The parameter maturity must be positive.")
+        return value
 
 
 
@@ -88,52 +94,57 @@ class YtMMethod(Enum):
 
 
 
-class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
+class Bond(FinancialInstrumentInterface, BondInterface):
     """
     Bond financial instrument and its methods.
     """
-    def __init__(self, bond_type: BondType, principal: float, coupon_rate: float, discount_rate: Union[np.ndarray, float], maturity: float,
-                 initial_price: float=0.0, compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
-                 identifier: str="0", first_coupon_time: float=1.0, coupon_growth_rate: float=0.0,
-                 inflation_rate: float=0.0, portfolio_price_array: np.ndarray=np.array([]), portfolio_time_array: np.ndarray=np.array([])) -> None:
-        # TODO: Add convertible, callable and puttable bonds
+    def __init__(self, bond_type: BondType, bond_struct: BondStruct,
+                 financial_instrument_struct: FinancialInstrumentStruct=FinancialInstrumentStruct(instrument_type=FinancialInstrumentType.CASH_INSTRUMENT,
+                                                                                                  asset_class=FinancialInstrumentAssetClass.DEBT_BASED_INSTRUMENT,
+                                                                                                  identifier="0"),
+                 portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
+                                                                                                  portfolio_time_array=np.array([])),
+                 compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1, coupon_growth_rate: float=0.0,
+                 inflation_rate: float=0.0, first_coupon_time: float=1.0) -> None:
+        # Arguments validation
+        type_check(value=bond_type, type_=BondType, value_name="bond_type")
+        type_check(value=bond_struct, type_=BondStruct, value_name="bond_struct")
+        type_check(value=financial_instrument_struct, type_=FinancialInstrumentStruct, value_name="financial_instrument_stuct")
+        type_check(value=portfolio_instrument_struct, type_=PortfolioInstrumentStruct, value_name="portfolio_instrument_struct")
+        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
         # Bond class parameters
         self.bond_type = bond_type
         self.compounding_type = compounding_type
-        self.coupon_growth_rate = float(coupon_growth_rate)
         self.compounding_frequency = int(compounding_frequency)
+        self.coupon_growth_rate = float(coupon_growth_rate)
         self.inflation_rate = float(inflation_rate)
         self.first_coupon_time = float(first_coupon_time)
         # BondStruct parameters
-        self.principal = float(principal)
-        self.coupon_rate = float(coupon_rate)
-        self.maturity = float(maturity)
-        self.initial_price = float(initial_price)
+        self.principal = bond_struct.principal
+        self.coupon_rate = bond_struct.coupon_rate
+        self.maturity = bond_struct.maturity
+        self.initial_price = bond_struct.initial_price
         # FinancialInstrumentStruct parameters
-        self.instrument_type = FinancialInstrumentType.CASH_INSTRUMENT
-        self.asset_class = FinancialInstrumentAssetClass.DEBT_BASED_INSTRUMENT
-        self.identifier = str(identifier)
+        self.instrument_type = financial_instrument_struct.instrument_type
+        self.asset_class = financial_instrument_struct.asset_class
+        self.identifier = financial_instrument_struct.identifier
         # PortfolioInstrumentStruct parameters
-        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
-                          array_2_name="portfolio_time_array")
-        self.portfolio_price_array = portfolio_price_array
-        self.portfolio_time_array = portfolio_price_array
+        self.portfolio_price_array = portfolio_instrument_struct.portfolio_price_array
+        self.portfolio_time_array = portfolio_instrument_struct.portfolio_price_array
         # Derived parameters
         self.time_step = float(1/compounding_frequency)
         self.coupon = self.principal*self.coupon_rate/self.compounding_frequency
-        cashflow = Cashflow(cashflow=self.coupon, final_time=maturity, start_time=first_coupon_time, time_step=self.time_step,
+        cashflow = Cashflow(cashflow=self.coupon, final_time=self.maturity, start_time=first_coupon_time, time_step=self.time_step,
                             time_array=None, cashflow_growth_rate=coupon_growth_rate, inflation_rate=inflation_rate)
         self.cashflow = cashflow.cashflow
         self.time_array = cashflow.time_array
-        if isinstance(discount_rate, float):
-            self.discount_rate = float(discount_rate)*np.ones(len(self.cashflow))
-        elif isinstance(discount_rate, np.ndarray):
-            if (len(discount_rate)==len(self.cashflow)):
-                self.dicount_rate = discount_rate
+        if isinstance(bond_struct.discount_rate, float):
+            self.discount_rate = float(bond_struct.discount_rate)*np.ones(len(self.cashflow))
+        else:
+            if (len(bond_struct.discount_rate)==len(self.cashflow)):
+                self.dicount_rate = bond_struct.discount_rate
             else:
                 raise ValueError("For the argument discount_rate of type np.ndarray, its length must be {} based on the given time parameters provided".format(len(self.cashflow)))
-        else:
-            raise TypeError("The argument discount_rate must be either of type float or np.ndarray.")
     
     def __str__(self):
         return f"Bond: {self.identifier}"
@@ -160,13 +171,13 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
         return self.present_value()*future_multiplicator
     
     def yield_to_maturity(self, ytm_method: YtMMethod=YtMMethod.NUMERICAL) -> float:
+        type_check(value=ytm_method, type_=YtMMethod, value_name="ytm_method")
         match ytm_method:
             case YtMMethod.APPROXIMATION:
                 return (self.coupon + (self.principal-self.initial_price)/self.maturity)/(0.5*(self.principal+self.initial_price))
             case YtMMethod.NUMERICAL:
                 return internal_rate_of_return(initial_cashflow=self.initial_price, cashflow=self.cashflow, time_array=self.time_array,
                                                compounding_type=self.compounding_type, compounding_frequency=self.compounding_frequency)
-        raise ValueError("The argument ytm_method must be of YtMMethod type.")
     
     def spot_rate(self, spot_rates: Union[np.ndarray, None]=None) -> float:
         """
@@ -188,7 +199,6 @@ class Bond(FinancialInstrumentInterface, BondStruct, BondInterface):
                     return -np.log((self.initial_price - discounted_coupons)/(self.principal + self.cashflow[-1]))/self.maturity
                 case CompoundingType.PERIODIC:
                     return self.compounding_frequency*((self.initial_price - discounted_coupons)/(self.principal + self.cashflow[-1]))**(-1/(self.maturity*self.compounding_frequency)) - self.compounding_frequency
-            raise ValueError("The argument compounding_type must be of CompoundingType type.")
         
     def par_yield(self) -> float:
         discount_terms = 0

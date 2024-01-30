@@ -3,7 +3,7 @@ import abc
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from src.digifi.utilities.general_utils import compare_array_len
+from src.digifi.utilities.general_utils import (type_check, DataClassValidation)
 from src.digifi.utilities.time_value_utils import (CompoundingType, Compounding)
 from src.digifi.financial_instruments.general import (FinancialInstrumentStruct, FinancialInstrumentInterface, FinancialInstrumentType,
                                                       FinancialInstrumentAssetClass)
@@ -42,8 +42,8 @@ class OptionPricingMethod(Enum):
 
 
 
-@dataclass
-class FuturesContractStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
+@dataclass(slots=True)
+class FuturesContractStruct(DataClassValidation):
     contract_type: ContractType
     contract_price: float
     delivery_price: float
@@ -51,10 +51,15 @@ class FuturesContractStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct
     maturity: float
     initial_spot_price: float
 
+    def validate_maturity(self, value: float, **_) -> float:
+        if value<0:
+            raise ValueError("The parameter maturity must be positive.")
+        return value
 
 
-@dataclass
-class OptionStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
+
+@dataclass(slots=True)
+class OptionStruct(DataClassValidation):
     asset_price: float
     strike_price: float
     discount_rate: float
@@ -64,6 +69,11 @@ class OptionStruct(FinancialInstrumentStruct, PortfolioInstrumentStruct):
     initial_option_price: float
     option_type: OptionType
     payoff_type: OptionPayoffType
+
+    def validate_time_to_maturity(self, value: float, **_) -> float:
+        if value<0:
+            raise ValueError("The parameter time_to_maturity must be positive.")
+        return value
 
 
 
@@ -186,34 +196,37 @@ class OptionInterface(metaclass=abc.ABCMeta):
 
 
 
-class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, FuturesContractInterface):
+class FuturesContract(FinancialInstrumentInterface, FuturesContractInterface):
     """
     Futures contract financial instrument and its methods.
-    Can act as a parent class in a definition of Forward Contract class.
+    Can act as a parent class in a definition of 'Forward Contract' class.
     """
-    def __init__(self, contract_price: float, delivery_price: float, discount_rate: float, maturity: float, initial_spot_price: float,
-                 compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1,
-                 identifier: str="0", contract_type: ContractType=ContractType.FUTURES, portfolio_price_array: np.ndarray=np.array([]),
-                 portfolio_time_array: np.ndarray=np.array([])) -> None:
+    def __init__(self, futures_contract_struct: FuturesContractStruct,
+                 financial_instrument_struct: FinancialInstrumentStruct=FinancialInstrumentStruct(instrument_type=FinancialInstrumentType.DERIVATIVE_INSTRUMENT,
+                                                                                                  asset_class=FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT,
+                                                                                                  identifier="0"),
+                 portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
+                                                                                                  portfolio_time_array=np.array([])),
+                 compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1) -> None:
+        # Arguments validation
+        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
         # FuturesContract class parameters
         self.compounding_type = compounding_type
         self.compounding_frequency = int(compounding_frequency)
         # FuturesContractStruct parameters
-        self.contract_type = contract_type
-        self.contract_price = float(contract_price)
-        self.delivery_price = float(delivery_price)
-        self.discount_rate = float(discount_rate)
-        self.maturity = float(maturity)
-        self.initial_spot_price = float(initial_spot_price)
+        self.contract_type = futures_contract_struct.contract_type
+        self.contract_price = futures_contract_struct.contract_price
+        self.delivery_price = futures_contract_struct.delivery_price
+        self.discount_rate = futures_contract_struct.discount_rate
+        self.maturity = futures_contract_struct.maturity
+        self.initial_spot_price = futures_contract_struct.initial_spot_price
         # FinancialInstrumentStruct parameters
-        self.instrument_type = FinancialInstrumentType.DERIVATIVE_INSTRUMENT
-        self.asset_class = FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT
-        self.identifier = str(identifier)
+        self.instrument_type = financial_instrument_struct.instrument_type
+        self.asset_class = financial_instrument_struct.asset_class
+        self.identifier = financial_instrument_struct.identifier
         # PortfolioInstrumentStruct parameters
-        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
-                          array_2_name="portfolio_time_array")
-        self.portfolio_price_array = portfolio_price_array
-        self.portfolio_time_array = portfolio_price_array
+        self.portfolio_price_array = portfolio_instrument_struct.portfolio_price_array
+        self.portfolio_time_array = portfolio_instrument_struct.portfolio_price_array
     
     def __str__(self):
         return f"Futures Contract: {self.identifier}"
@@ -223,7 +236,7 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, Futur
         Latest spot price of the contract.
         Helper method to update spot price during calculations.
         """
-        if isinstance(current_price, type(None))==False:
+        if isinstance(current_price, type(None)) is False:
             current_price = float(current_price)
         else:
             current_price = self.initial_spot_price
@@ -273,46 +286,54 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractStruct, Futur
 
 
 
-class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
+class Option(FinancialInstrumentInterface, OptionInterface):
     """
     Option financial instrument and its methods.
     """
-    def __init__(self, asset_price: float, strike_price: float, discount_rate: float, time_to_maturity: float, sigma: float, initial_option_price: float=0.0,
-                 option_type: OptionType=OptionType.EUROPEAN, payoff_type: OptionPayoffType=OptionPayoffType.CALL,
-                 option_pricing_method: OptionPricingMethod=OptionPricingMethod.BINOMIAL,
-                 dividend_yield: float=0.0, identifier: str="0", portfolio_price_array: np.ndarray=np.array([]),
-                 portfolio_time_array: np.ndarray=np.array([])) -> None:
+    def __init__(self, option_struct: OptionStruct, option_pricing_method: OptionPricingMethod=OptionPricingMethod.BINOMIAL,
+                 financial_instrument_struct: FinancialInstrumentStruct=FinancialInstrumentStruct(instrument_type=FinancialInstrumentType.DERIVATIVE_INSTRUMENT,
+                                                                                                  asset_class=FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT,
+                                                                                                  identifier="0"),
+                 portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
+                                                                                                  portfolio_time_array=np.array([]))) -> None:
+        # Arguments validation
+        type_check(value=option_pricing_method, type_=OptionPricingMethod, value_name="option_pricing_method")
+        if (option_pricing_method==OptionPricingMethod.BLACK_SCHOLES) and (option_struct.option_type!=OptionType.EUROPEAN):
+            raise ValueError("Black-Scholes option pricing is only available for European options.")
         # Option class parameters
         self.option_pricing_method = option_pricing_method
-        if (option_pricing_method==OptionPricingMethod.BLACK_SCHOLES) and (option_type!=OptionType.EUROPEAN):
-            raise ValueError("Black-Scholes option pricing is only available for European options.")
         # OptionStruct parameters
-        self.asset_price = float(asset_price)
-        self.strike_price = float(strike_price)
-        self.discount_rate = float(discount_rate)
-        self.dividend_yield = float(dividend_yield)
-        self.time_to_maturity = float(time_to_maturity)
-        self.sigma = float(sigma)
-        self.initial_option_price = float(initial_option_price)
-        self.option_type = option_type
-        self.payoff_type = payoff_type
-        match payoff_type:
+        self.asset_price = option_struct.asset_price
+        self.strike_price = option_struct.strike_price
+        self.discount_rate = option_struct.discount_rate
+        self.dividend_yield = option_struct.dividend_yield
+        self.time_to_maturity = option_struct.time_to_maturity
+        self.sigma = option_struct.sigma
+        self.initial_option_price = option_struct.initial_option_price
+        self.option_type = option_struct.option_type
+        self.payoff_type = option_struct.payoff_type
+        match self.payoff_type:
             case OptionPayoffType.CALL:
                 self.payoff = self.call_payoff
             case OptionPayoffType.PUT:
                 self.payoff = self.put_payoff
         # FinancialInstrumentStruct parameters
-        self.instrument_type = FinancialInstrumentType.DERIVATIVE_INSTRUMENT
-        self.asset_class = FinancialInstrumentAssetClass.EQUITY_BASED_INSTRUMENT
-        self.identifier = str(identifier)
+        self.instrument_type = financial_instrument_struct.instrument_type
+        self.asset_class = financial_instrument_struct.asset_class
+        self.identifier = financial_instrument_struct.identifier
         # PortfolioInstrumentStruct parameters
-        compare_array_len(array_1=portfolio_price_array, array_2=portfolio_time_array, array_1_name="portfolio_price_array",
-                          array_2_name="portfolio_time_array")
-        self.portfolio_price_array = portfolio_price_array
-        self.portfolio_time_array = portfolio_price_array
+        self.portfolio_price_array = portfolio_instrument_struct.portfolio_price_array
+        self.portfolio_time_array = portfolio_instrument_struct.portfolio_price_array
     
     def __str__(self):
         return f"Option: {self.identifier}"
+    
+    def __is_european(self, method_name: str) -> None:
+        """
+        Check that the instance is a European option.
+        """
+        if self.option_type!=OptionType.EUROPEAN:
+            raise ValueError("To use {} method it is required for the option_type argument to be defined as OptionType.EUROPEAN.".format(str(method_name)))
     
     @staticmethod
     def call_payoff(s_t: Union[np.ndarray, float], k: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
@@ -385,8 +406,7 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
         """
         Value of the European option evaluated using Black-Scholes formula.
         """
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use Black-Scholed method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="Black-Scholes pricing")
         black_scholes_params = self.__european_option_black_scholes_params()
         d_1, d_2 = black_scholes_params["d_1"], black_scholes_params["d_2"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
@@ -397,12 +417,9 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
             case OptionPayoffType.PUT:
                 return (self.strike_price*np.exp(-self.discount_rate*self.time_to_maturity)*normal_dist.cdf(x=-d_2) -
                         self.asset_price*np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=-d_1))
-            case _:
-                raise TypeError("The argument payoff_type must of OptionPayoffType type.")
     
     def european_option_delta(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_delta")
         d_1 = self.__european_option_black_scholes_params()["d_1"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
         match self.payoff_type:
@@ -410,19 +427,15 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
                 return np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=d_1)
             case OptionPayoffType.PUT:
                 return -np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=-d_1)
-            case _:
-                raise TypeError("The argument payoff_type must be of OptionPayoffType type.")
     
     def european_option_vega(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_vega")
         d_1 = self.__european_option_black_scholes_params()["d_1"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
         return self.asset_price*np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=d_1)*np.sqrt(self.time_to_maturity)
     
     def european_option_theta(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_theta")
         black_scholes_params = self.__european_option_black_scholes_params()
         d_1, d_2 = black_scholes_params["d_1"], black_scholes_params["d_2"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
@@ -435,12 +448,9 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
                 return (-np.exp(-self.dividend_yield*self.time_to_maturity)*self.asset_price*normal_dist.cdf(x=d_1)*self.sigma/(2*np.sqrt(self.time_to_maturity)) +
                         self.discount_rate*self.strike_price*np.exp(-self.discount_rate*self.time_to_maturity)*normal_dist.cdf(x=-d_2) -
                         self.dividend_yield*self.asset_price*np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=-d_1))
-            case _:
-                raise TypeError("The argument payoff_type must be of OptionPayoffType type.")
     
     def european_option_rho(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_rho")
         d_2 = self.__european_option_black_scholes_params()["d_2"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
         match self.payoff_type:
@@ -448,12 +458,9 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
                 return self.strike_price*self.time_to_maturity*np.exp(-self.discount_rate*self.time_to_maturity)*normal_dist.cdf(x=d_2)
             case OptionPayoffType.PUT:
                 return -self.strike_price*self.time_to_maturity*np.exp(-self.discount_rate*self.time_to_maturity)*normal_dist.cdf(x=-d_2)
-            case _:
-                raise TypeError("The argument payoff_type must be of OptionPayoffType type.")
 
     def european_option_epsilon(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_epsilon")
         d_1 = self.__european_option_black_scholes_params()["d_1"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
         match self.payoff_type:
@@ -461,12 +468,9 @@ class Option(FinancialInstrumentInterface, OptionStruct, OptionInterface):
                 return -self.asset_price*self.time_to_maturity*np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=d_1)
             case OptionPayoffType.PUT:
                 return self.asset_price*self.time_to_maturity*np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=-d_1)
-            case _:
-                raise TypeError("The argument payoff_type must be of OptionPayoffType type.")
 
     def european_option_gamma(self) -> float:
-        if self.option_type!=OptionType.EUROPEAN:
-            raise ValueError("To use this method it is required for the option_type argument to be defined as OptionType.EUROPEAN.")
+        self.__is_european(method_name="european_option_gamma")
         d_1 = self.__european_option_black_scholes_params()["d_1"]
         normal_dist = NormalDistribution(mu=0, sigma=1)
         return np.exp(-self.dividend_yield*self.time_to_maturity)*normal_dist.cdf(x=d_1)/(self.asset_price*self.sigma*np.sqrt(self.time_to_maturity))

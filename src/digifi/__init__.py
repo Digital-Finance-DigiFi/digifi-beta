@@ -8,7 +8,7 @@ from .utilities.time_value_utils import (CompoundingType, Cashflow, present_valu
                                          ptp_compounding_transformation, ptc_compounding_transformation, ctp_compounding_transformation,
                                          real_interest_rate, forward_interest_rate, Compounding, Perpetuity, Annuity)
 
-from .utilities.general_utils import (verify_array, compare_array_len, rolling)
+from .utilities.general_utils import (compare_array_len, rolling, type_check, DataClassValidation)
 
 from .utilities.bonds_utils import (bond_price_from_yield, bootstrap)
 
@@ -41,9 +41,14 @@ from .financial_instruments.derivatives import (ContractType, OptionType, Option
 
 from .financial_instruments.rates_and_swaps import (ForwardRateAgreementStruct, ForwardRateAgreement)
 
+from .financial_instruments.bills_of_exchange import (BillOfExchangeStruct, BillOfExchange)
+
 # Stochastic models
 
-from .stochastic_processes.general import (StochasticProcessInterface, StochasticProcess)
+from .stochastic_processes.general import (StochasticProcessType, StochasticProcessInterface, StochasticProcess, quick_build_stochastic_process)
+
+from .stochastic_processes.stochastic_components import (StationaryTrendType, CustomNoise, JumpType, NormalPoissonJumpsParams, AssymetricBilateralJumpsParams,
+                                                         CustomJump, Drift, DifferenceStationary, Diffusion, Jump)
 
 from .stochastic_processes.standard_stochastic_models import (FellerSquareRootProcessMethod, ArithmeticBrownianMotion,
                                                            GeometricBrownianMotion,OrnsteinUhlenbeckProcess, BrownianBridge,
@@ -60,8 +65,7 @@ from .technical_indicators.technical_indicators import (ema, sma, macd, bollinge
 
 # Probability distributions
 
-from .probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionStruct,
-                                                ProbabilityDistributionInterface, skewness, kurtosis)
+from .probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionInterface, skewness, kurtosis)
 
 from .probability_distributions.discrete_probability_distributions import (BernoulliDistribution, BinomialDistribution,
                                                                            DiscreteUniformDistribution, PoissonDistribution)

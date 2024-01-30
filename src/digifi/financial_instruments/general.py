@@ -1,6 +1,7 @@
 import abc
 from dataclasses import dataclass
 from enum import Enum
+from src.digifi.utilities.general_utils import DataClassValidation
 
 
 
@@ -22,13 +23,12 @@ class FinancialInstrumentAssetClass(Enum):
 
 
 
-@dataclass
-class FinancialInstrumentStruct:
+@dataclass(slots=True)
+class FinancialInstrumentStruct(DataClassValidation):
     """
-    Struct with general financial instrument data.
-
-    identifier: Financial Instrument Global Identifier (FIGI), International Securities Identification Number (ISIN)
-    term: maturity
+    Struct with general financial instrument data.\n
+    Parameters:
+        - identifier: Financial Instrument Global Identifier (FIGI), International Securities Identification Number (ISIN)
     """
     instrument_type: FinancialInstrumentType
     asset_class: FinancialInstrumentAssetClass

@@ -1,5 +1,5 @@
 import numpy as np
-from src.digifi.utilities.general_utils import (verify_array, compare_array_len, rolling)
+from src.digifi.utilities.general_utils import (compare_array_len, rolling, type_check)
 
 
 
@@ -8,7 +8,7 @@ def sma(price_array: np.ndarray, period: int=15) -> np.ndarray:
     Takes in an array of prices and returns an array of SMA readings.
     Simple Moving Average (SMA) describes the direction of the trend, and is computed using the mean over the certain window of readings.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     return np.append(np.nan*np.ones(int(period-1)), np.mean(rolling(array=price_array, window=int(period)), axis=1))
 
 
@@ -19,7 +19,7 @@ def ema(price_array: np.ndarray, period: int=20, smoothing: int=2) -> np.ndarray
     Exponential Moving Average (EMA) describes the direction of the trend, and requires previous EMA and the latest price to compute;
     the first EMA reading will be same as SMA.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
     smoothing = int(smoothing)
     multiplier = smoothing/(1+period)
@@ -36,7 +36,7 @@ def macd(price_array: np.ndarray, small_ema_period: int=12, large_ema_period: in
     Takes in an array of prices and returns a dataframe with MACD, Signal Line and MACD Histogram.
     Moving Average Convergence/Divergence (MACD) describes changes in the strength, direction, momentum, and duration of a trend.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     small_ema_period = int(small_ema_period)
     large_ema_period = int(large_ema_period)
     signal_line = int(signal_line)
@@ -66,7 +66,7 @@ def bollinger_bands(price_array: np.ndarray, period: int=50, n_std: int=2) -> di
     Takes in an array of prices and returns a dataframe with SMA, and the upper and lowr Bolinger Bands.
     Bollinger Band is an SMA with additional upper and lower bands contain price action within n_deviations away from the SMA line.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
     n_std = int(n_std)
     sma_ = sma(price_array=price_array, period=period)
@@ -81,7 +81,7 @@ def rsi(price_array: np.ndarray, period: int=14, oversold_band: float=30, overbo
     Relative Strength Index (RSI) is a momentum indicator that measures the magnitude of recent price changes to evaluate overbought
     or oversold conditions.
     """
-    verify_array(array=price_array, array_name="price_array")
+    type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
     price_array_length = len(price_array)
     # rsi_df = pd.DataFrame(columns=["U", "D", "U SMMA", "D SMMA", "RS", "RSI"])

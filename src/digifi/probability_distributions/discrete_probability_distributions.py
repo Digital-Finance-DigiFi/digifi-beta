@@ -1,12 +1,11 @@
 from typing import Union
 import numpy as np
-from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionStruct,
-                                                          ProbabilityDistributionInterface)
+from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionInterface)
 from src.digifi.utilities.maths_utils import (factorial, n_choose_r)
 
 
 
-class BernoulliDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class BernoulliDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of Bernoulli distribution.
     """
@@ -79,7 +78,7 @@ class BernoulliDistribution(ProbabilityDistributionStruct, ProbabilityDistributi
 
 
 
-class BinomialDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class BinomialDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of binomial distribution.
     """
@@ -130,7 +129,7 @@ class BinomialDistribution(ProbabilityDistributionStruct, ProbabilityDistributio
 
 
 
-class DiscreteUniformDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class DiscreteUniformDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of discrete uniform distribution.
     """
@@ -167,7 +166,7 @@ class DiscreteUniformDistribution(ProbabilityDistributionStruct, ProbabilityDist
 
 
 
-class PoissonDistribution(ProbabilityDistributionStruct, ProbabilityDistributionInterface):
+class PoissonDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of Poisson distribution.
     """

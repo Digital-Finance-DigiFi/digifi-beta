@@ -1,6 +1,6 @@
 from typing import Union
 import numpy as np
-from src.digifi.utilities.general_utils import verify_array
+from src.digifi.utilities.general_utils import type_check
 
 
 
@@ -57,7 +57,7 @@ def maximum_drawdown(returns: Union[list, np.ndarray]) -> float:
     """
     Maximum drawdown = (trough value - peak value) / peak value.
     """
-    verify_array(array=returns, array_name="returns")
+    type_check(value=returns, type_=np.ndarray, value_name="returns")
     maxmimum_drawdown_candidates = [0]
     minimum = returns[0]
     maximum = returns[0]

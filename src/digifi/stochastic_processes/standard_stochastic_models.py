@@ -16,7 +16,8 @@ class FellerSquareRootProcessMethod(enum.Enum):
 
 class ArithmeticBrownianMotion(StochasticProcessInterface):
     """
-    dS = mu*dt + sigma*dW
+    dS_{t} = \\mu*dt + \\sigma*dW_{t}\n
+    Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion#:~:text=solution%20claimed%20above.-,Arithmetic%20Brownian%20Motion,-%5Bedit%5D\n
     """
     def __init__(self, mu: float=0.05, sigma: float=0.4, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu = float(mu)
@@ -61,8 +62,9 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
 
 class GeometricBrownianMotion(StochasticProcessInterface):
     """
-    dS = mu*S*dt + sigma*S*dW
-    Model describing the evolution of stock prices.
+    dS_{t} = \\mu*S_{t}*dt + \\sigma*S_{t}*dW_{t}\n
+    Model describing the evolution of stock prices.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion\n
     """
     def __init__(self, mu: float=0.2, sigma: float=0.4, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu = float(mu)
@@ -102,8 +104,9 @@ class GeometricBrownianMotion(StochasticProcessInterface):
 
 class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
     """
-    dS = alpha*(mu-S)*dt + sigma*dW
-    Model describes the evolution of interest rates.
+    dS_{t} = \\alpha*(\\mu-S_{t})*dt + \\sigma*dW_{t}\n
+    Model describes the evolution of interest rates.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process\n
     """
     def __init__(self, mu: float=0.07, sigma: float=0.1, alpha: float=10.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
                  s_0: float=0.05) -> None:
@@ -154,9 +157,10 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
 
 class BrownianBridge(StochasticProcessInterface):
     """
-    dS = ((b-X)/(T-t))*dt + sigma*dW
+    dS_{t} = ((b-a)/(T-t))*dt + \\sigma*dW_{t}\n
     Model can support useful variance reduction techniques for pricing derivative contracts using Monte-Carlo simulation, 
-    such as sampling. Also used in scenario generation.
+    such as sampling. Also used in scenario generation.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge\n
     """
     def __init__(self, alpha: float=1.0, beta: float=2.0, sigma: float=0.5, n_paths: int=100, n_steps: int=200, T: float=1.0) -> None:
         self.alpha = float(alpha)
@@ -196,8 +200,9 @@ class BrownianBridge(StochasticProcessInterface):
 
 class FellerSquareRootProcess(StochasticProcessInterface):
     """
-    dS = alpha*(mu-S)*dt + sigma*sqrt(S)*dW
-    Model describes the evolution of interest rates.
+    dS_{t} = alpha*(\\mu-S_{t})*dt + \\sigma*sqrt(S_{t})*dW_{t}\n
+    Model describes the evolution of interest rates.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model\n
     """
     def __init__(self, mu: float=0.05, sigma: float=0.265, alpha: float=5.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
                  s_0: float=0.03) -> None:
