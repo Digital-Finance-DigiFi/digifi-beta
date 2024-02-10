@@ -1,10 +1,12 @@
-import enum
+from typing import Any
+from enum import Enum
 import numpy as np
+from src.digifi.utilities.general_utils import type_check
 from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
 
 
-class FellerSquareRootProcessMethod(enum.Enum):
+class FellerSquareRootProcessMethod(Enum):
     """
     Types of Feller Square-Root Process.
     """
@@ -16,8 +18,11 @@ class FellerSquareRootProcessMethod(enum.Enum):
 
 class ArithmeticBrownianMotion(StochasticProcessInterface):
     """
-    dS_{t} = \\mu*dt + \\sigma*dW_{t}\n
-    Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion#:~:text=solution%20claimed%20above.-,Arithmetic%20Brownian%20Motion,-%5Bedit%5D\n
+    ## Description
+    dS_{t} = \\mu*dt + \\sigma*dW_{t}
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion#:~:text=solution%20claimed%20above.-,Arithmetic%20Brownian%20Motion,-%5Bedit%5D
+    - Original Source: https://doi.org/10.24033/asens.476
     """
     def __init__(self, mu: float=0.05, sigma: float=0.4, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu = float(mu)
@@ -29,7 +34,7 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
         
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Arithmetic Brownian Motion generated using the Euler-Maruyama method.
         """
@@ -62,9 +67,12 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
 
 class GeometricBrownianMotion(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\mu*S_{t}*dt + \\sigma*S_{t}*dW_{t}\n
-    Model describing the evolution of stock prices.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion\n
+    Model describing the evolution of stock prices.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
+    - Original Source: http://dx.doi.org/10.1086/260062
     """
     def __init__(self, mu: float=0.2, sigma: float=0.4, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
         self.mu = float(mu)
@@ -76,7 +84,7 @@ class GeometricBrownianMotion(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Geometric Brownian Motion generated using the Euler-Maruyama method.
         """
@@ -104,9 +112,12 @@ class GeometricBrownianMotion(StochasticProcessInterface):
 
 class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\alpha*(\\mu-S_{t})*dt + \\sigma*dW_{t}\n
-    Model describes the evolution of interest rates.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process\n
+    Model describes the evolution of interest rates.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
+    - Original Source: https://doi.org/10.1103%2FPhysRev.36.823
     """
     def __init__(self, mu: float=0.07, sigma: float=0.1, alpha: float=10.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
                  s_0: float=0.05) -> None:
@@ -120,7 +131,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
     
-    def get_paths(self, analytic_em: bool=False) -> np.ndarray:
+    def get_paths(self, analytic_em: bool=False) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Ornsteain_uhlenbeck Process generated using Euler-Maruyama method.
         Intakes an argument analytic_em with bool values. If True, then returns the simulation with the analytic 
@@ -157,10 +168,15 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
 
 class BrownianBridge(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = ((b-a)/(T-t))*dt + \\sigma*dW_{t}\n
     Model can support useful variance reduction techniques for pricing derivative contracts using Monte-Carlo simulation, 
-    such as sampling. Also used in scenario generation.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge\n
+    such as sampling. Also used in scenario generation.
+    Inputs:
+    Outputs:
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge
+    - Original Source: N/A
     """
     def __init__(self, alpha: float=1.0, beta: float=2.0, sigma: float=0.5, n_paths: int=100, n_steps: int=200, T: float=1.0) -> None:
         self.alpha = float(alpha)
@@ -172,7 +188,7 @@ class BrownianBridge(StochasticProcessInterface):
         self.dt = T/n_steps
         self.t = np.arange(0, T+self.dt, self.dt)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Brownian Bridge generated using the Euler-Maruyama method.
         """
@@ -200,12 +216,17 @@ class BrownianBridge(StochasticProcessInterface):
 
 class FellerSquareRootProcess(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = alpha*(\\mu-S_{t})*dt + \\sigma*sqrt(S_{t})*dW_{t}\n
-    Model describes the evolution of interest rates.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model\n
+    Model describes the evolution of interest rates.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model
+    - Original Source: https://doi.org/10.2307/1911242
     """
     def __init__(self, mu: float=0.05, sigma: float=0.265, alpha: float=5.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
-                 s_0: float=0.03) -> None:
+                 s_0: float=0.03, method: FellerSquareRootProcessMethod=FellerSquareRootProcessMethod.EULER_MARUYAMA) -> None:
+        # Arguments validation
+        type_check(value=method, type_=FellerSquareRootProcessMethod, value_name="method")
         self.mu = float(mu)
         self.sigma = float(sigma)
         self.alpha = float(alpha)
@@ -215,8 +236,9 @@ class FellerSquareRootProcess(StochasticProcessInterface):
         self.dt = T/n_steps
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
+        self.method = method
     
-    def get_paths(self, method: FellerSquareRootProcessMethod=FellerSquareRootProcessMethod.EULER_MARUYAMA) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Feller Square-Root Process generated using either Euler-Maruyama method or the exact method.
         For Euler-Maruyama simulation, set method atribute to FellerSquareRootProcessMethod.EULER_MARUYAMA;
@@ -226,24 +248,23 @@ class FellerSquareRootProcess(StochasticProcessInterface):
         # Stochastic process
         N = np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.s_0*np.ones((1, self.n_paths)), np.zeros((self.n_steps, self.n_paths))), axis=0)
-        if method==FellerSquareRootProcessMethod.EULER_MARUYAMA:
-            for i in range(0, self.n_steps):
-                    s[i+1,:] = s[i,:] + self.alpha*(self.mu-s[i,:])*self.dt + self.sigma*np.sqrt(s[i,:]*self.dt)*N[i,:]
+        match self.method:
+            case FellerSquareRootProcessMethod.EULER_MARUYAMA:
+                for i in range(0, self.n_steps):
+                        s[i+1,:] = s[i,:] + self.alpha*(self.mu-s[i,:])*self.dt + self.sigma*np.sqrt(s[i,:]*self.dt)*N[i,:]
+                        s[i+1,:] = np.maximum(s[i+1,:], np.zeros((1, self.n_paths)))
+            case FellerSquareRootProcessMethod.ANALYTIC_EULER_MARUYAMA:
+                a = (self.sigma**2)/self.alpha*(np.exp(-self.alpha*self.dt)-np.exp(-2*self.alpha*self.dt))
+                b = self.mu*(self.sigma**2)/(2*self.alpha)*(1-np.exp(-self.alpha*self.dt))**2
+                for i in range(0, self.n_steps):
+                    s[i+1,:] = self.mu + (s[i,:]-self.mu)*np.exp(-self.alpha*self.dt) + np.sqrt(a*s[i,:]+b)*N[i,:]
                     s[i+1,:] = np.maximum(s[i+1,:], np.zeros((1, self.n_paths)))
-        elif method==FellerSquareRootProcessMethod.ANALYTIC_EULER_MARUYAMA:
-            a = (self.sigma**2)/self.alpha*(np.exp(-self.alpha*self.dt)-np.exp(-2*self.alpha*self.dt))
-            b = self.mu*(self.sigma**2)/(2*self.alpha)*(1-np.exp(-self.alpha*self.dt))**2
-            for i in range(0, self.n_steps):
-                s[i+1,:] = self.mu + (s[i,:]-self.mu)*np.exp(-self.alpha*self.dt) + np.sqrt(a*s[i,:]+b)*N[i,:]
-                s[i+1,:] = np.maximum(s[i+1,:], np.zeros((1, self.n_paths)))
-        elif method==FellerSquareRootProcessMethod.EXACT:
-            d = 4*self.alpha*self.mu/(self.sigma**2)
-            k = (self.sigma**2)*(1-np.exp(-self.alpha*self.dt))/(4*self.alpha)
-            for i in range(0, self.n_steps):
-                delta = 4*self.alpha*s[i,:]/((self.sigma**2)*(np.exp(self.alpha*self.dt)-1))
-                s[i+1,:] = np.random.noncentral_chisquare(d, delta, (1, self.n_paths))*k
-        else:
-            raise ValueError("Provided method is not recognized. Use FellerSquareRootProcessMethod enum to select a supported method.")
+            case FellerSquareRootProcessMethod.EXACT:
+                d = 4*self.alpha*self.mu/(self.sigma**2)
+                k = (self.sigma**2)*(1-np.exp(-self.alpha*self.dt))/(4*self.alpha)
+                for i in range(0, self.n_steps):
+                    delta = 4*self.alpha*s[i,:]/((self.sigma**2)*(np.exp(self.alpha*self.dt)-1))
+                    s[i+1,:] = np.random.noncentral_chisquare(d, delta, (1, self.n_paths))*k
         return s.transpose()
     
     def get_expectation(self) -> np.ndarray:

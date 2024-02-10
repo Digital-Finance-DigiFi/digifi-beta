@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import (Any, Tuple)
 import numpy as np
 from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
@@ -6,9 +6,12 @@ from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
 class ConstantElasticityOfVariance(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\mu*S_{t}*dt + \\sigma*S^(beta+1)_{t}*dW_{t}\n
     Model used to reproduce the volatility smile effect.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Constant_elasticity_of_variance_model\n
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Constant_elasticity_of_variance_model
+    - Original Source: https://doi.org/10.3905/jpm.1996.015
     """
     def __init__(self, mu: float=0.2, sigma: float=0.4, beta: float=0.0, n_paths: int=100, n_steps: int=200, T: float=1.0,
                  s_0: float=100.0) -> None:
@@ -22,7 +25,7 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Constant Elasticity of Variance Process.
         """
@@ -44,11 +47,14 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
 
 class HestonStochasticVolatility(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\mu*S_{t}*dt + \\sqrt{v_{t}}*S_{t}*dW^{S}_{t}\n
     dv_{t} = k*(\\theta-v)*dt + \\epsilon*\\sqrt{v}dW^{v}_{t}\n
     corr(W^{S}_{t}, W^{v}_{t}) = \\rho\n
-    Model describes the evolution of stock price and its volatility.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Heston_model\n
+    Model describes the evolution of stock price and its volatility.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Heston_model
+    - Original Source: https://doi.org/10.1093%2Frfs%2F6.2.327
     """
     def __init__(self, mu: float=0.1, k: float=5.0, theta: float=0.07, epsilon: float=0.2, rho: float=0.0, n_paths: int=100,
                  n_steps: int=200, T: float=1.0, s_0: float=100.0, v_0: float=0.03) -> None:
@@ -65,7 +71,7 @@ class HestonStochasticVolatility(StochasticProcessInterface):
         self.s_0 = float(s_0)
         self.v_0 = float(v_0)
     
-    def get_paths(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_paths(self) -> Tuple[np.ndarray[Any, np.ndarray], np.ndarray[Any, np.ndarray]]:
         """
         Paths, S, of the Heston Stochastic Volatility Process.
         """
@@ -97,9 +103,12 @@ class HestonStochasticVolatility(StochasticProcessInterface):
 
 class VarianceGammaProcess(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\mu*dG(t) + \\sigma*\\sqrt{dG(t)}\\mathcal{N}(0,1)\n
-    Model used in option pricing.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Variance_gamma_process\n
+    Model used in option pricing.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Variance_gamma_process
+    - Original Source: https://doi.org/10.1086%2F296519
     """
     def __init__(self, mu: float=0.2, sigma: float=0.3, rate: float=20.0, n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=0.03) -> None:
         self.mu = float(mu)
@@ -113,7 +122,7 @@ class VarianceGammaProcess(StochasticProcessInterface):
         self.s_0 = float(s_0)
         self.rate = float(rate)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Variance Gamma Process.
         """

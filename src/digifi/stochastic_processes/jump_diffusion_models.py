@@ -1,3 +1,4 @@
+from typing import Any
 import numpy as np
 from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
@@ -5,9 +6,12 @@ from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
 class MertonJumpDiffusionProcess(StochasticProcessInterface):
     """
+    ## Description
     S_{t} = (\\mu-0.5*\\sigma^2)*t + \\sigma*W_{t} + sum_{i=1}^{N(t)} Z_{i}\n
-    Model describes stock price with continuous movement that have rare large jumps.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Jump_diffusion#:~:text=a%20restricted%20volume-,In%20economics%20and%20finance,-%5Bedit%5D\n
+    Model describes stock price with continuous movement that have rare large jumps.
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Jump_diffusion#:~:text=a%20restricted%20volume-,In%20economics%20and%20finance,-%5Bedit%5D
+    - Original Source: https://doi.org/10.1016%2F0304-405X%2876%2990022-2
     """
     def __init__(self, mu_s: float=0.2, sigma_s: float=0.3, mu_j: float=-0.1, sigma_j: float=0.15, lambda_j: float=0.5, n_paths: int=100,
                  n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
@@ -23,7 +27,7 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Merton Jump-Diffusion Process.
         """
@@ -53,13 +57,15 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
 
 class KouJumpDiffusionProcess(StochasticProcessInterface):
     """
+    ## Description
     dS_{t} = \\mu*dt + \\sigma*dW_{t} + d(sum_{i=1}^{N(t)}(V_{i}-1))\n
     where V_{i} is i.i.d. non-negative random variables such that Y = log(V) is the assymetric double exponential distribution with density:\n
-    f_{Y}(y) = p*\\eta_{1}*e^{-\\eta_{1}y}\mathbb{1}_{0\\leq0} + (1-p)*\\eta_{2}*e^{\\eta_{2}y}\mathbb{y<0}
+    f_{Y}(y) = p*\\eta_{1}*e^{-\\eta_{1}y}\mathbb{1}_{0\\leq0} + (1-p)*\\eta_{2}*e^{\\eta_{2}y}\mathbb{y<0}\n
     Model describes stock price with continuous movement that have rare large jumps, with the jump sizes following a double 
-    exponential distribution.\n
-    Wikipedia: N/A\n
-    Original Source: https://www.columbia.edu/~sk75/MagSci02.pdf
+    exponential distribution.
+    ## Links
+    - Wikipedia: N/A
+    - Original Source: https://dx.doi.org/10.2139/ssrn.242367
     """
     def __init__(self, mu: float=0.2, sigma: float=0.3, lambda_n: float=0.5, eta_1: float=9.0, eta_2: float=5.0, p: float=0.5,
                  n_paths: int=100, n_steps: int=200, T: float=1.0, s_0: float=100.0) -> None:
@@ -76,7 +82,7 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
     
-    def get_paths(self) -> np.ndarray:
+    def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
         Paths, S, of the Kou Jump-Diffusion Process.
         """

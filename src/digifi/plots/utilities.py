@@ -14,7 +14,7 @@ def type_check(value: Any, type_: type[Any], value_name: str) -> None:
 
 def compare_array_len(array_1: np.ndarray, array_2: np.ndarray, array_1_name: str="array_1", array_2_name: str="array_2") -> None:
     """
-    Compare that the two arrays provided are of the same length, while also verifying that both arrays are of numpy.ndarray type.
+    Compare that the two arrays provided are of the same length, while also verifying that both arrays are of np.ndarray type.
     """
     type_check(value=array_1, type_=np.ndarray, value_name=str(array_1_name))
     type_check(value=array_2, type_=np.ndarray, value_name=str(array_2_name))

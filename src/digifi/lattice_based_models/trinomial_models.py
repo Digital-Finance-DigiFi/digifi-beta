@@ -1,12 +1,14 @@
-from typing import (List, Callable, Union)
+from typing import (List, Union, Type)
 import numpy as np
 from src.digifi.utilities.general_utils import type_check
 from src.digifi.lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
+from src.digifi.financial_instruments.derivatives_utils import (CustomPayoff, LongCallPayoff, LongPutPayoff, validate_custom_payoff)
 
 
 
 def trinomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -> List[np.ndarray]:
     """
+    ## Description
     Trinomial tree with the defined parameters presented as an array of layers.
     """
     start_point = float(start_point)
@@ -28,15 +30,16 @@ def trinomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -
 
 
 
-def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u: float, p_d: float, n_steps: int,
+def trinomial_model(payoff: Type[CustomPayoff], start_point: float, u: float, d: float, p_u: float, p_d: float, n_steps: int,
                    payoff_timesteps: Union[List[bool], None]=None) -> float:
     """
+    ## Description
     General trinomial model with custom payoff.\n
     The function assumes that there is a payoff at the final time step.\n
-    This function does not discount future cashflows.\n
+    This function does not discount future cashflows.
     """
-    #Arguments validation
-    type_check(value=payoff, type_=Callable, value_name="payoff")
+    # Arguments validation
+    payoff = validate_custom_payoff(custom_payoff=payoff)
     start_point = float(start_point)
     # Movements
     u = float(u)
@@ -66,13 +69,13 @@ def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_
         raise TypeError("The argument payoff_timesteps should be a list of boolean values.")
     # Trinomial model
     trinomial_tree = trinomial_tree_nodes(start_point=start_point, u=u, d=d, n_steps=n_steps)
-    trinomial_tree[-1] = payoff(trinomial_tree[-1])
+    trinomial_tree[-1] = payoff.payoff(s_t=trinomial_tree[-1])
     for i in range(len(trinomial_tree)-2, -1, -1):
         layer = np.array([])
         for j in range(1, 2*(i+1)):
             value = p_d*trinomial_tree[i+1][j-1] + p_s*trinomial_tree[i+1][j] + p_u*trinomial_tree[i+1][j+1]
             if payoff_timesteps[i]:
-                exercise = payoff(trinomial_tree[i][len(layer)])
+                exercise = payoff.payoff(s_t=np.array([trinomial_tree[i][len(layer)]]))[0]
                 layer = np.append(layer, max(value, exercise))
             else:
                 layer = np.append(layer, value)
@@ -83,12 +86,15 @@ def trinomial_model(payoff: Callable, start_point: float, u: float, d: float, p_
 
 class BrownianMotionTrinomialModel(LatticeModelInterface):
     """
+    ## Description
     Trinomial models that are scaled to emulate Brownian motion.
     """
     def __init__(self, s_0: float, k: float, T: float, r: float, sigma: float, q: float, n_steps: int,
-                 payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.CALL) -> None:
+                 payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.LONG_CALL,
+                 custom_payoff: Union[Type[CustomPayoff], None]=None) -> None:
         # Arguments validation
         type_check(value=payoff_type, type_=LatticeModelPayoffType, value_name="payoff_type")
+        # BrownianMotionTrinomialModel class paraneters
         self.s_0 = float(s_0)
         self.k = float(k)
         self.T = float(T)
@@ -97,10 +103,15 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
         self.q = float(q)
         self.n_steps = int(n_steps)
         match payoff_type:
-            case LatticeModelPayoffType.CALL:
-                self.payoff: Callable = self.call_payoff
-            case LatticeModelPayoffType.PUT:
-                self.payoff: Callable = self.put_payoff
+            case LatticeModelPayoffType.LONG_CALL:
+                self.payoff = self.__long_call_payoff()
+            case LatticeModelPayoffType.LONG_PUT:
+                self.payoff = self.__long_put_payoff()
+            case LatticeModelPayoffType.CUSTOM:
+                if isinstance(custom_payoff, CustomPayoff):
+                    self.payoff = validate_custom_payoff(custom_payoff=custom_payoff)
+                else:
+                    raise ValueError("For the CUSTOM payoff type, the argument custom_payoff must be defined.")
         self.dt = T/n_steps
         if self.dt>=2*(sigma**2)/((r-q)**2):
             raise ValueError("With the given arguments, the condition \Delta t<1\\frac\{\sigma^\{2\}\}\{(r-q)^\{2\}\} is not satisfied.")
@@ -109,14 +120,15 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
         self.p_u = ((np.exp((r-q)*self.dt/2)-np.exp(-sigma*np.sqrt(self.dt/2))) / (np.exp(sigma*np.sqrt(self.dt/2))-np.exp(-sigma*np.sqrt(self.dt/2))))**2
         self.p_d = ((np.exp(sigma*np.sqrt(self.dt/2))-np.exp((r-q)*self.dt/2)) / (np.exp(sigma*np.sqrt(self.dt/2))-np.exp(-sigma*np.sqrt(self.dt/2))))**2
     
-    def call_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
-        return np.maximum(s_t-self.k, 0)
+    def __long_call_payoff(self) -> Type[CustomPayoff]:
+        return LongCallPayoff(k=self.k)
     
-    def put_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
-        return np.maximum(self.k-s_t, 0)
+    def __long_put_payoff(self) -> Type[CustomPayoff]:
+        return LongPutPayoff(k=self.k)
     
     def european_option(self) -> float:
         """
+        ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
         payoff_timesteps = []
@@ -127,6 +139,7 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
     
     def american_option(self) -> float:
         """
+        ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
         payoff_timesteps = []
@@ -137,6 +150,7 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
     
     def bermudan_option(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
         """
+        ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
         """
         return np.exp(-self.r*self.T)*trinomial_model(payoff=self.payoff, start_point=self.s_0, u=self.u, d=self.d, p_u=self.p_u, p_d=self.p_d,

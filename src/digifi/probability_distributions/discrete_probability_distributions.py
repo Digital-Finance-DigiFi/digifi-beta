@@ -1,13 +1,17 @@
-from typing import Union
 import numpy as np
-from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionInterface)
+from scipy.optimize import fsolve
+from scipy.special import betainc
+from src.digifi.utilities.general_utils import type_check
 from src.digifi.utilities.maths_utils import (factorial, n_choose_r)
+from src.digifi.probability_distributions.general import (ProbabilityDistributionType, ProbabilityDistributionInterface)
+from src.digifi.probability_distributions.continuous_probability_distributions import NormalDistribution
 
 
 
 class BernoulliDistribution(ProbabilityDistributionInterface):
     """
-    Methods and properties of Bernoulli distribution.
+    Methods and properties of Bernoulli distribution.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Bernoulli_distribution\n
     """
     def __init__(self, p: float) -> None:
         p = float(p)
@@ -40,16 +44,12 @@ class BernoulliDistribution(ProbabilityDistributionInterface):
         else:
             raise ValueError("The argument k must be in the \{0, 1\} set.")
         
-    def pdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        if isinstance(k, np.ndarray):
-            result = np.array([])
-            for k_ in k:
-                result = np.append(result, self.__pdf(k=int(k_)))
-        elif isinstance(k, float):
-            result = self.__pdf(k=k)
-        else:
-            raise TypeError("The argument k must be of either np.ndarray or int type.")
-        return result
+    def pdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        result = []
+        for k_ in k:
+            result.append(self.__pdf(k=int(k_)))
+        return np.array(result)
     
     def __cdf(self, k: int) -> float:
         if int(k)<0:
@@ -59,28 +59,32 @@ class BernoulliDistribution(ProbabilityDistributionInterface):
         else:
             return 1-self.p
     
-    def cdf(self, k: Union[np.ndarray, int]):
-        if isinstance(k, np.ndarray):
-            result = np.array([])
-            for k_ in k:
-                result = np.append(result, self.__cdf(k=int(k_)))
-        elif isinstance(k, float):
-            result = self.__cdf(k=k)
-        else:
-            raise TypeError("The argument k must be of either np.ndarray or int type.")
-        return result
+    def cdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        result = []
+        for k_ in k:
+            result.append(self.__cdf(k=int(k_)))
+        return np.array(result)
     
-    def mgf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        type_check(value=p, type_=np.ndarray, value_name="p")
+        p = np.where((p<0) | (1<p), np.nan, p)
+        return np.where(p==1.0, 1, 0)
+    
+    def mgf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return (1-self.p) + self.p*np.exp(t)
     
-    def cf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def cf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return (1-self.p) + self.p*np.exp(1j*t)
 
 
 
 class BinomialDistribution(ProbabilityDistributionInterface):
     """
-    Methods and properties of binomial distribution.
+    Methods and properties of binomial distribution.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Binomial_distribution\n
     """
     def __init__(self, n: int, p: float) -> None:
         n = int(n)
@@ -106,32 +110,48 @@ class BinomialDistribution(ProbabilityDistributionInterface):
         k = int(k)
         return n_choose_r(n=self.n, r=k)*(self.p**k)*((1-self.p)**(self.n-k))
     
-    def pdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        if isinstance(k, np.ndarray):
-            result = np.array([])
-            for k_ in k:
-                result = np.append(result, self.__pdf(k=int(k_)))
-        elif isinstance(k, int):
-            result = self.__pdf(k=k)
-        else:
-            raise TypeError("The argument k must be of either np.ndarray or int type.")
+    def pdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        result = []
+        for k_ in k:
+            result.append(self.__pdf(k=int(k_)))
+        return np.array(result)
+    
+    def cdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        a = self.n - np.floor(k)
+        b = 1 + np.floor(k)
+        return betainc(a, b, np.ones(len(k))*(1-self.p))
+    
+    def inverse_cdf(self, p: np.ndarray, x_0: float=0.5) -> np.ndarray:
+        x_0 = float(x_0)
+        type_check(value=p, type_=np.ndarray, value_name="p")
+        p = np.where((p<0) | (1<p), np.nan, p)
+        result = np.array([])
+        for p_ in p:
+            if np.isnan(p_):
+                result = np.append(result, p_)
+                continue
+            def quantile(rv: np.ndarray) -> float:
+                cdf = self.cdf(k=rv)
+                return np.where(np.isnan(cdf), 0, cdf) - p_
+            result = np.append(result, int(fsolve(quantile, x0=np.array([x_0]))[0]))
         return result
     
-    def cdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        # TODO: Implement incomplete beta function from maths_utils.py
-        return 0.0
-    
-    def mgf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def mgf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return ((1-self.p) + self.p*np.exp(t))**self.n
     
-    def cf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def cf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return ((1-self.p) + self.p*np.exp(1j*t))**self.n
 
 
 
 class DiscreteUniformDistribution(ProbabilityDistributionInterface):
     """
-    Methods and properties of discrete uniform distribution.
+    Methods and properties of discrete uniform distribution.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Discrete_uniform_distribution\n
     """
     def __init__(self, a: int, b: int) -> None:
         a = int(a)
@@ -141,7 +161,7 @@ class DiscreteUniformDistribution(ProbabilityDistributionInterface):
         # DiscreteUniformDistribution class arguments
         self.a = a
         self.b = b
-        self.n = b-a+1
+        self.n = b - a + 1
         # ProbabilityDistributionStruct arguments
         self.distribution_type = ProbabilityDistributionType.DISCRETE_DISTRIBUTION
         self.mean = (a+b)/2
@@ -152,23 +172,32 @@ class DiscreteUniformDistribution(ProbabilityDistributionInterface):
         self.excess_kurtosis = -6*(self.n**2 + 1)/(5*(self.n**2 - 1))
         self.entropy = np.log(self.n)
     
-    def pdf(self, n_readings: int) -> Union[np.ndarray, float]:
+    def pdf(self, n_readings: int) -> np.ndarray:
         return np.ones(int(n_readings))/self.n
     
-    def cdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        return np.where((self.a<=k) and (k<=self.b), (np.floor(k)-self.a+1)/self.n, np.nan)
+    def cdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        return np.where((self.a<=k) & (k<=self.b), (np.floor(k)-self.a+1)/self.n, np.nan)
     
-    def mgf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        type_check(value=p, type_=np.ndarray, value_name="p")
+        p = np.where((p<0) | (1<p), np.nan, p)
+        return (p*self.n) - 1 + self.a
+    
+    def mgf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return (np.exp(self.a*t) - np.exp((self.b+1)*t))/(self.n*(1-np.exp(t)))
     
-    def cf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def cf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return (np.exp(1j*self.a*t) - np.exp(1j*(self.b+1)*t))/(self.n*(1-np.exp(1j*t)))
 
 
 
 class PoissonDistribution(ProbabilityDistributionInterface):
     """
-    Methods and properties of Poisson distribution.
+    Methods and properties of Poisson distribution.\n
+    Wikipedia: https://en.wikipedia.org/wiki/Poisson_distribution\n
     """
     def __init__(self, lambda_: float) -> None:
         lambda_ = float(lambda_)
@@ -190,41 +219,42 @@ class PoissonDistribution(ProbabilityDistributionInterface):
         k = int(k)
         if k<0:
             raise ValueError("The argument k must be positive.")
-        return ((self.lambda_**k)*np.exp(-self.lambda_))/factorial(k=k)
+        return ((self.lambda_**k)*np.exp(-self.lambda_))/factorial(n=k)
 
-    def pdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        if isinstance(k, np.ndarray):
-            result = np.array([])
-            for k_ in k:
-                result = np.append(result, self.__pdf(k=int(k_)))
-        elif isinstance(k, int):
-            result = self.__pdf(k=k)
-        else:
-            raise TypeError("The argument k must be of either np.ndarray or int type.")
-        return result
+    def pdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        result = []
+        for k_ in k:
+            result.append(self.__pdf(k=int(k_)))
+        return np.array(result)
     
     def __cdf(self, k: int) -> float:
         k = int(k)
         result = 0
         if k<0:
             raise ValueError("The argument k must be positive.")
-        for i in range(0, np.floor(k)+1):
-            result = result + (self.lambda_**i)/factorial(k=i)
+        for i in range(0, int(np.floor(k))):
+            result = result + (self.lambda_**i)/factorial(n=i)
         return np.exp(-self.lambda_)*result
     
-    def cdf(self, k: Union[np.ndarray, int]) -> Union[np.ndarray, float]:
-        if isinstance(k, np.ndarray):
-            result = np.array([])
-            for k_ in k:
-                result = np.append(result, self.__cdf(k=int(k_)))
-        elif isinstance(k, float):
-            result = self.__cdf(k=k)
-        else:
-            raise TypeError("The argument k must be of either np.ndarray or int type.")
-        return result
+    def cdf(self, k: np.ndarray) -> np.ndarray:
+        type_check(value=k, type_=np.ndarray, value_name="k")
+        result = []
+        for k_ in k:
+            result.append(self.__cdf(k=int(k_)))
+        return np.array(result)
     
-    def mgf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        type_check(value=p, type_=np.ndarray, value_name="p")
+        p = np.where((p<0) | (1<p), np.nan, p)
+        w = NormalDistribution(mu=0, sigma=1).inverse_cdf(p=p)
+        return (self.lambda_ + np.sqrt(self.lambda_)*w + (1/3+(w**2)/6) + (-w/36 - (w**3)/72)/np.sqrt(self.lambda_)
+                + (-8/405 + 7*(w**2)/810 + (w**4)/270)/self.lambda_)
+    
+    def mgf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(self.lambda_*(np.exp(t)-1))
     
-    def cf(self, t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
+    def cf(self, t: np.ndarray) -> np.ndarray:
+        type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(self.lambda_*(np.exp(1j*t)-1))

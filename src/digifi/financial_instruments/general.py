@@ -26,8 +26,11 @@ class FinancialInstrumentAssetClass(Enum):
 @dataclass(slots=True)
 class FinancialInstrumentStruct(DataClassValidation):
     """
-    Struct with general financial instrument data.\n
-    Parameters:
+    ## Description
+    Struct with general financial instrument data.
+    ### Input:
+        - instrument_type: Type of the financial instrument (i.e., cash instrument or derivative instrument)
+        - asset_class: Asset class of the instrument (i.e., debt-based, equity-based or foreign exchange instrument)
         - identifier: Financial Instrument Global Identifier (FIGI), International Securities Identification Number (ISIN)
     """
     instrument_type: FinancialInstrumentType

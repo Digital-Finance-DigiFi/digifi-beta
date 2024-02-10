@@ -5,7 +5,8 @@ import numpy as np
 
 def compare_array_len(array_1: np.ndarray, array_2: np.ndarray, array_1_name: str="array_1", array_2_name: str="array_2") -> None:
     """
-    Compare that the two arrays provided are of the same length, while also verifying that both arrays are of numpy.ndarray type.
+    ## Description
+    Compare that the two arrays provided are of the same length, while also verifying that both arrays are of np.ndarray type.
     """
     type_check(value=array_1, type_=np.ndarray, value_name=array_1_name)
     type_check(value=array_2, type_=np.ndarray, value_name=array_2_name)
@@ -16,6 +17,7 @@ def compare_array_len(array_1: np.ndarray, array_2: np.ndarray, array_1_name: st
 
 def rolling(array: np.ndarray, window: int) -> np.ndarray:
     """
+    ## Description
     Rolling window over an array.
     """
     window = int(window)
@@ -28,6 +30,7 @@ def rolling(array: np.ndarray, window: int) -> np.ndarray:
 
 def type_check(value: Any, type_: type[Any], value_name: str) -> None:
     """
+    ## Description
     Perform dynamic type check for a value to be of a defined type.
     """
     if isinstance(value, type_) is False:
@@ -36,12 +39,13 @@ def type_check(value: Any, type_: type[Any], value_name: str) -> None:
 
 
 class DataClassValidation:
+    """
+    ## Description
+    Validate fields and types in dataclass instances.\n
+    If dataclass instance has custom validation methods in the format validate_<field_name>,
+    where <field_name> is replaced with the name of the field - the custom validation method will be run.
+    """
     def __post_init__(self) -> None:
-        """
-        Validate types and fields in dataclass instances.\n
-        If dataclass instance has custom validation methods in the format validate_<field_name>,
-        where <field_name> is replaced with the name of the field - it will be checked using the custom validation method.
-        """
         # Validate types
         for k, v in self.__annotations__.items():
             try:
@@ -52,4 +56,3 @@ class DataClassValidation:
         for name, field in self.__dataclass_fields__.items():
             if (method := getattr(self, f"validate_{name}", None)):
                 setattr(self, name, method(getattr(self, name), field=field))
-    

@@ -1,10 +1,9 @@
 import numpy as np
 from src.digifi.pseudo_random_generators.general import PseudoRandomGeneratorInterface
-from src.digifi.pseudo_random_generators.generator_algorithms import (accept_reject_method, box_muller_algorithm, marsaglia_method,
-                                                                      ziggurat_algorithm)
+from src.digifi.pseudo_random_generators.generator_algorithms import (accept_reject_method, inverse_transform_method,
+                                                                      box_muller_algorithm, marsaglia_method, ziggurat_algorithm)
 from src.digifi.pseudo_random_generators.uniform_distribution_generators import FibonacciPseudoRandomNumberGenerator
 from src.digifi.probability_distributions.continuous_probability_distributions import (NormalDistribution, LaplaceDistribution)
-# TODO: Add inverse transformation method
 
 
 
@@ -26,20 +25,31 @@ class StandardNormalAcceptRejectPseudoRandomNumberGenerator(PseudoRandomGenerato
         M = np.sqrt(2*np.exp(1)/np.pi)
         U_1 = FibonacciPseudoRandomNumberGenerator(seed=self.seed_1, sample_size=self.sample_size).generate()
         U_2 = FibonacciPseudoRandomNumberGenerator(seed=self.seed_2, sample_size=self.sample_size).generate()
-        L = np.ones(self.sample_size)
-        N = []
         # Laplace distribution sampling
         laplace_dist = LaplaceDistribution(mu=0, b=1)
-        # TODO: Replace sampling with the inverse tranform method based on inverse CDF of a Laplace distribution
-        for i in range(0, self.sample_size):
-            if U_1[i]<(1-self.lap_p):
-                L[i] = np.log(2*U_1[i])
-            else:
-                L[i] = -np.log(2*(1-U_1[i]))
+        L = laplace_dist.inverse_cdf(p=U_1)
         # Accept-reject algorithm
         standard_normal_dist = NormalDistribution(mu=0, sigma=1)
         return accept_reject_method(f_x=standard_normal_dist.pdf, g_x=laplace_dist.pdf, Y_sample=L, M=M, uniform_sample=U_2,
                                     sample_size=self.sample_size)
+
+
+
+class StandardNormalInverseTransformMethodPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
+    """
+    Pseudo-random number generator for standard normal distribution.
+    It returns the array of values from sampling an inverse CDF.
+    """
+    def __init__(self, sample_size: int=10_000, seed: int=78_321) -> None:
+        self.sample_size = int(sample_size)
+        self.seed = int(seed)
+    
+    def generate(self) -> np.ndarray:
+        """
+        Array of pseudo-random generated numbers based on the Inverse Transform Method.
+        """
+        normal_dist = NormalDistribution(mu=0.0, sigma=1.0)
+        return inverse_transform_method(f_x=normal_dist.inverse_cdf, sample_size=self.sample_size, seed=self.seed)
 
 
 

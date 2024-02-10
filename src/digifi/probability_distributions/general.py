@@ -1,4 +1,3 @@
-from typing import Union
 import abc
 from enum import Enum
 import numpy as np
@@ -25,36 +24,40 @@ class ProbabilityDistributionInterface(metaclass=abc.ABCMeta):
                 callable(subclass.cf))
     
     @abc.abstractmethod
-    def pdf(self) -> Union[np.ndarray, float]:
+    def pdf(self) -> np.ndarray:
         """
         Probability density function.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def cdf(self) -> Union[np.ndarray, float]:
+    def cdf(self) -> np.ndarray:
         """
         Cummulative distribution function (CDF).
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def mgf(self) -> Union[np.ndarray, float]:
+    def mgf(self) -> np.ndarray:
         """
         Moment generating function (MGF).
         """
         raise NotImplementedError
     
     @abc.abstractmethod
-    def cf(self) -> Union[np.ndarray, float]:
+    def cf(self) -> np.ndarray:
         """
         Characteristic function (CF).
         Characteristic function is the Fourier transform of the PDF.
         """
         raise NotImplementedError
     
-    # TODO: Add generate_random_points method
-    # TODO: Add inverse_cdf method (i.e., F^{-1}(x)) for inverse_transformation_method function
+    @abc.abstractmethod
+    def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        Inverse cumulative distribution function (CDF), else knwon as quantile function.
+        """
+        raise NotImplementedError
 
 
 

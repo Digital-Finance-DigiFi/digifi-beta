@@ -1,12 +1,15 @@
-from typing import List, Callable, Union
+from typing import (List, Union, Type)
 import numpy as np
+from src.digifi.utilities.general_utils import type_check
 from src.digifi.utilities.maths_utils import n_choose_r
 from src.digifi.lattice_based_models.general import (LatticeModelPayoffType, LatticeModelInterface)
+from src.digifi.financial_instruments.derivatives_utils import (CustomPayoff, LongCallPayoff, LongPutPayoff, validate_custom_payoff)
 
 
 
 def binomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -> List[np.ndarray]:
     """
+    ## Description
     Binomial tree with the defined parameters presented as an array of layers.
     """
     start_point = float(start_point)
@@ -26,13 +29,15 @@ def binomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) ->
 
 
 
-def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u: float, n_steps: int,
+def binomial_model(payoff: Type[CustomPayoff], start_point: float, u: float, d: float, p_u: float, n_steps: int,
                    payoff_timesteps: Union[List[bool], None]=None) -> float:
     """
+    ## Description
     General binomial model with custom payoff.\n
     The function assumes that there is a payoff at the final time step.\n
-    This function does not discount future cashflows.\n
+    This function does not discount future cashflows.
     """
+    payoff = validate_custom_payoff(custom_payoff=payoff)
     start_point = float(start_point)
     u = float(u)
     d = float(d)
@@ -58,7 +63,7 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
     layer = np.array([])
     # Final layer
     for i in range(n_steps+1):
-        value = payoff(start_point * (u**i) * (d**(n_steps-i)))
+        value = payoff.payoff(s_t=np.array([start_point * (u**i) * (d**(n_steps-i))]))[0]
         layer = np.append(layer, value)
     binomial_tree.append(layer)
     # Layers before the final layer
@@ -67,7 +72,7 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
         for i in range(0, j+1):
             value = p_u*binomial_tree[-1][i+1] + (1-p_u)*binomial_tree[-1][i]
             if payoff_timesteps[j]:
-                exercise = payoff(s_t=start_point * (u**i) * (d**(j-i)))
+                exercise = payoff.payoff(s_t=np.array([start_point * (u**i) * (d**(j-i))]))[0]
                 layer = np.append(layer, max(value, exercise))
             else:
                 layer = np.append(layer, value)
@@ -78,10 +83,15 @@ def binomial_model(payoff: Callable, start_point: float, u: float, d: float, p_u
 
 class BrownianMotionBinomialModel(LatticeModelInterface):
     """
+    ## Description
     Binomial models that are scaled to emulate Brownian motion.
     """
     def __init__(self, s_0: float, k: float, T: float, r: float, sigma: float, q: float, n_steps: int,
-                 payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.CALL) -> None:
+                 payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.LONG_CALL,
+                 custom_payoff: Union[Type[CustomPayoff], None]=None) -> None:
+        # Arguments validation
+        type_check(value=payoff_type, type_=LatticeModelPayoffType, value_name="payoff_type")
+        # BrownianMotionBinomialModel class parameters
         self.s_0 = float(s_0)
         self.k = float(k)
         self.T = float(T)
@@ -90,24 +100,28 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         self.q = float(q)
         self.n_steps = int(n_steps)
         match payoff_type:
-            case LatticeModelPayoffType.CALL:
-                self.payoff: Callable = self.call_payoff
-            case LatticeModelPayoffType.PUT:
-                self.payoff: Callable = self.put_payoff
-            case _:
-                raise ValueError("The argument payoff_type must be of BinomialModelPayoffType type.")
+            case LatticeModelPayoffType.LONG_CALL:
+                self.payoff = self.__long_call_payoff().payoff
+            case LatticeModelPayoffType.LONG_PUT:
+                self.payoff = self.__long_put_payoff().payoff
+            case LatticeModelPayoffType.CUSTOM:
+                if isinstance(custom_payoff, CustomPayoff):
+                    self.payoff = validate_custom_payoff(custom_payoff=custom_payoff).payoff
+                else:
+                    raise ValueError("For the CUSTOM payoff type, the argument custom_payoff must be defined.")
         self.dt = T/n_steps
         self.u = np.exp(sigma*np.sqrt(self.dt))
         self.d = np.exp(-sigma*np.sqrt(self.dt))
     
-    def call_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
-        return max(s_t-self.k, 0)
+    def __long_call_payoff(self) -> Type[CustomPayoff]:
+        return LongCallPayoff(k=self.k)
     
-    def put_payoff(self, s_t: Union[np.ndarray, float]) -> Union[np.ndarray, float]:
-        return max(self.k-s_t, 0)
+    def __long_put_payoff(self) -> Type[CustomPayoff]:
+        return LongPutPayoff(k=self.k)
     
     def european_option(self) -> float:
         """
+        ## Description
         Binomial model that computes the payoffs for each path and computes the weighted average of paths based on probability.
         """
         p = (np.exp((self.r-self.q)*self.dt) - self.d)/(self.u-self.d)
@@ -115,11 +129,12 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         for i in range(self.n_steps+1):
             node_probability = n_choose_r(self.n_steps, i) * (p**i) * ((1-p)**(self.n_steps-i))
             s_T = self.s_0 * (self.u**i) * (self.d**(self.n_steps-i))
-            value += self.payoff(s_t=s_T)*node_probability
+            value += self.payoff(s_t=np.array([s_T]))[0]*node_probability
         return float(value*np.exp(-self.r*self.T))
     
     def american_option(self) -> float:
         """
+        ## Description
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
         """
         payoff_timesteps = []
@@ -129,6 +144,7 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
     
     def bermudan_option(self, payoff_timesteps: Union[List[bool], None]=None) -> float:
         """
+        ## Description
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
         """
         if isinstance(payoff_timesteps, type(None)):
@@ -147,14 +163,14 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         binomial_tree = []
         layer = np.array([])
         for i in range(self.n_steps+1):
-            layer = np.append(layer, self.payoff(s_t=self.s_0 * (self.u**i) * (self.d**(self.n_steps-i))))
+            layer = np.append(layer, self.payoff(s_t=np.array([self.s_0 * (self.u**i) * (self.d**(self.n_steps-i))]))[0])
         binomial_tree.append(layer)
         for j in range(self.n_steps-1, -1, -1):
             layer = np.array([])
             for i in range(0, j+1):
                 value = p_u*binomial_tree[-1][i+1] + p_d*binomial_tree[-1][i]
                 if payoff_timesteps[-j]:
-                    exercise = self.payoff(s_t=self.s_0 * (self.u**i) * (self.d**(j-i)))
+                    exercise = self.payoff(s_t=np.array([self.s_0 * (self.u**i) * (self.d**(j-i))]))[0]
                     layer = np.append(layer, max(value, exercise))
                 else:
                     layer = np.append(layer, value)
