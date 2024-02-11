@@ -9,6 +9,11 @@ class AMMToken(DataClassValidation):
     """
     ## Description
     Token data format used to define AMMLiquidityPool.
+    ### Input:
+        - identifier: Token identifier/name
+        - supply: Supply of token in the liquidity pool
+        - fee_lower_bound: Lower bound for possible fee
+        - fee_upper_bound: Upper bound for possible fee
     """
     identifier: str
     supply: float
@@ -22,7 +27,13 @@ class AMMLiquidityPool(DataClassValidation):
     """
     ## Description
     Liquidity data for an AMM.\n
-    Characteristic Number = Token 1 Supply * Token 2 Supply.
+    Characteristic Number = Token 1 Supply * Token 2 Supply
+    ### Input:
+        - token_1: Token 1 data
+        - token_2: Token 2 data
+        - char_number: Characteristic number
+    ### LaTeX Formula:
+        - \\textit{Characteristic Number} = S_{1}\\times S_{2}
     """
     token_1: AMMToken
     token_2: AMMToken
@@ -45,6 +56,10 @@ class AMMTransactionData(DataClassValidation):
     """
     ## Description
     Transaction data used to pass transactions into AMM methods.
+    ### Input:
+        - token_id: Token identifier/name that is being purchased
+        - quantity: Number of tokens to purchase from exchange
+        - percent_fee: Fee size as the percentage of transaction
     """
     token_id: str
     quantity: float
@@ -61,7 +76,9 @@ class SimpleAMM:
     """
     ## Description
     Contains computational methods for an AMM with the liquidity pool given by\n
-    Characteristic Number = Token 1 Supply * Token 2 Supply.
+    Characteristic Number = Token 1 Supply * Token 2 Supply
+    ### LaTeX Formula:
+        - \\textit{Characteristic Number} = S_{1}\\times S_{2}
     ## Links
         - Wikipedia: N/A
         - Original Source: https://doi.org/10.48550/arXiv.2106.14404

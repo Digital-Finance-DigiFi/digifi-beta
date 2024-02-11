@@ -1,4 +1,6 @@
-from .digifi.general import (get_test_stock_data)
+from .digifi.general import (get_test_stock_data, get_test_portfolio_data, get_test_capm_data)
+
+from .digifi.test_corporate_finance import (TestCAPM)
 
 from .digifi.test_financial_instruments import (TestOption, TestStock)
 

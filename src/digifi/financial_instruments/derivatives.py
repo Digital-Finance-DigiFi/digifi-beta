@@ -53,6 +53,8 @@ class FuturesContractStruct(DataClassValidation):
     discount_rate: float
     maturity: float
     initial_spot_price: float = 0.0
+    compounding_type: CompoundingType = CompoundingType.PERIODIC
+    compounding_frequency: int = 1
 
     def validate_maturity(self, value: float, **_) -> float:
         if value<0:
@@ -206,16 +208,11 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractInterface):
                                                                                                   identifier="0"),
                  portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
                                                                                                   portfolio_time_array=np.array([]),
-                                                                                                  portfolio_predicatble_income=np.array([])),
-                 compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1) -> None:
+                                                                                                  portfolio_predicatble_income=np.array([]))) -> None:
         # Arguments validation
         type_check(value=futures_contract_struct, type_=FuturesContractStruct, value_name="futures_contract_struct")
         type_check(value=financial_instrument_struct, type_=FinancialInstrumentStruct, value_name="financial_instrument_struct")
         type_check(value=portfolio_instrument_struct, type_=PortfolioInstrumentStruct, value_name="portfolio_instrument_struct")
-        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
-        # FuturesContract class parameters
-        self.compounding_type = compounding_type
-        self.compounding_frequency = int(compounding_frequency)
         # FuturesContractStruct parameters
         self.contract_type = futures_contract_struct.contract_type
         self.contract_price = futures_contract_struct.contract_price
@@ -223,6 +220,8 @@ class FuturesContract(FinancialInstrumentInterface, FuturesContractInterface):
         self.discount_rate = futures_contract_struct.discount_rate
         self.maturity = futures_contract_struct.maturity
         self.initial_spot_price = futures_contract_struct.initial_spot_price
+        self.compounding_type = futures_contract_struct.compounding_type
+        self.compounding_frequency = futures_contract_struct.compounding_frequency
         # FinancialInstrumentStruct parameters
         self.instrument_type = financial_instrument_struct.instrument_type
         self.asset_class = financial_instrument_struct.asset_class

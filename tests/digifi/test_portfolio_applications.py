@@ -1,9 +1,6 @@
-import datetime
 import numpy as np
-import pandas as pd
-import yfinance as yf
-
 import src.digifi as dgf
+import tests as dgf_tests
 
 
 
@@ -30,17 +27,16 @@ class TestPortfolio:
     Test Portfolio class.
     """
     def integration_test(self) -> dict[str, dict]:
-        # Sample data collection
-        stock_list = ['JPM', 'GS', 'BAC', 'C']
-        end_date = datetime.datetime.now()
-        start_date = end_date - datetime.timedelta(days=365)
-        data: pd.DataFrame = yf.download(tickers=stock_list, start=start_date, end=end_date)["Adj Close"]
+        # Sample data
+        data = dgf_tests.get_test_portfolio_data()
+        stock_list = list(data.keys())
+        stock_list.remove("Date")
         # Inputs definition
         weights = np.ones(len(stock_list))/len(stock_list)
         assets = dict()
         predictable_income = dict()
-        for column in data.columns:
-            assets[column] = data[column].to_numpy()
+        for column in stock_list:
+            assets[column] = data[column]
             predictable_income[column] = 0.05*np.ones(len(data[column]))
         # Integration test
         portfolio = dgf.Portfolio(assets=assets, weights=weights, predictable_income=predictable_income)
@@ -68,8 +64,9 @@ class TestInstrumentsPortfolio:
         option_prices = dgf.GeometricBrownianMotion(mu=0.0, sigma=0.3, n_paths=1, n_steps=n_steps-1, T=T, s_0=option_initial_price).get_paths()[0]
         option_predictable_income = np.zeros(n_steps)
         # Instuments definitions
-        bond_struct = dgf.BondStruct(principal=bond_principal, coupon_rate=bond_coupon_rate, discount_rate=r, maturity=T, initial_price=bond_principal)
-        bond = dgf.Bond(bond_type=dgf.BondType.ANNUITY_BOND, bond_struct=bond_struct,
+        bond_struct = dgf.BondStruct(bond_type=dgf.BondType.ANNUITY_BOND, principal=bond_principal, coupon_rate=bond_coupon_rate,
+                                     discount_rate=r, maturity=T, initial_price=bond_principal)
+        bond = dgf.Bond(bond_struct=bond_struct,
                         financial_instrument_struct=dgf.FinancialInstrumentStruct(instrument_type=dgf.FinancialInstrumentType.CASH_INSTRUMENT,
                                                                                   asset_class=dgf.FinancialInstrumentAssetClass.DEBT_BASED_INSTRUMENT,
                                                                                   identifier="bond"),

@@ -8,8 +8,8 @@ def factorial(n: int) -> int:
     ## Description
     Factorial of n defined through a recursion.
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Factorial
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Factorial
+        - Original Source: N/A
     """
     n = int(n)
     if n==0:
@@ -23,8 +23,8 @@ def n_choose_r(n: int, r: int) -> int:
     ## Description
     nCr: n choose r
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Binomial_coefficient
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Binomial_coefficient
+        - Original Source: N/A
     """
     n = int(n)
     r = int(r)
@@ -37,8 +37,8 @@ def erf(x: Union[np.ndarray, float], n_terms: int=20) -> Union[np.ndarray, float
     ## Description
     Error function computed with the Taylor expansion.
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Error_function
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Error_function
+        - Original Source: N/A
     """
     # Arguments validation
     if isinstance(x, np.ndarray):

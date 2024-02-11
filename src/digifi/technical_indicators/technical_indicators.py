@@ -5,8 +5,16 @@ from src.digifi.utilities.general_utils import (compare_array_len, rolling, type
 
 def sma(price_array: np.ndarray, period: int=15) -> np.ndarray:
     """
-    Takes in an array of prices and returns an array of SMA readings.
+    ## Description
     Simple Moving Average (SMA) describes the direction of the trend, and is computed using the mean over the certain window of readings.
+    ### Input:
+        - price_array: Array of prices
+        - period: Size of the rolling window for the SMA
+    ### Output:
+        - Array of SMA readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Moving_average#Simple_moving_average
+        - Original Source: N/A
     """
     type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     return np.append(np.nan*np.ones(int(period-1)), np.mean(rolling(array=price_array, window=int(period)), axis=1))
@@ -15,9 +23,18 @@ def sma(price_array: np.ndarray, period: int=15) -> np.ndarray:
 
 def ema(price_array: np.ndarray, period: int=20, smoothing: int=2) -> np.ndarray:
     """
-    Takes in an array of prices and returns an array of EMA readings.
+    ## Description
     Exponential Moving Average (EMA) describes the direction of the trend, and requires previous EMA and the latest price to compute;
-    the first EMA reading will be same as SMA.
+    the first EMA reading will be same as SMA.\n
+    ### Input:
+        - price_array: Array of prices
+        - period: Size of the rolling window for the EMA
+        - smoothing: Smoothing of the EMA
+    ### Output:
+        - Array of EMA readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+        - Original Source: N/A
     """
     type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
@@ -31,10 +48,25 @@ def ema(price_array: np.ndarray, period: int=20, smoothing: int=2) -> np.ndarray
 
 
 
-def macd(price_array: np.ndarray, small_ema_period: int=12, large_ema_period: int=26, signal_line: int=9, smoothing: int=2) -> dict:
+def macd(price_array: np.ndarray, small_ema_period: int=12, large_ema_period: int=26, signal_line: int=9, smoothing: int=2) -> dict[str, np.ndarray]:
     """
-    Takes in an array of prices and returns a dataframe with MACD, Signal Line and MACD Histogram.
+    ## Description
     Moving Average Convergence/Divergence (MACD) describes changes in the strength, direction, momentum, and duration of a trend.
+    ### Input:
+        - price_array: Array of prices
+        - small_ema_period: Size of the rolling window for the smaller EMA
+        - large_ema_period: Size of the rolling window for the larger EMA
+        - signal_line: Size of rolling window for the signal line
+        - smoothing: Smoothing of the EMAs
+    ### Output:
+        - small_ema: Array of smaller EMA readings
+        - large_ema: Array of larger EMA readings
+        - macd: Array of MACD readings
+        - signal_line: Array of singal line readings
+        - macd_hist: Array of MACD histogram sizes
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/MACD
+        - Original Source: N/A
     """
     type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     small_ema_period = int(small_ema_period)
@@ -61,10 +93,21 @@ def macd(price_array: np.ndarray, small_ema_period: int=12, large_ema_period: in
 
 
 
-def bollinger_bands(price_array: np.ndarray, period: int=50, n_std: int=2) -> dict:
+def bollinger_bands(price_array: np.ndarray, period: int=50, n_std: int=2) -> dict[str, np.ndarray]:
     """
-    Takes in an array of prices and returns a dataframe with SMA, and the upper and lowr Bolinger Bands.
+    ## Description
     Bollinger Band is an SMA with additional upper and lower bands contain price action within n_deviations away from the SMA line.
+    ### Input:
+        - price_array: Array of prices
+        - period: Size of the rolling window for the SMA
+        - n_std: Number of standard deviations used to construct Bollinger bands around the SMA
+    ### Output:
+        - sma: Array of SMA readings
+        - upper_band: Array of upper Bollinger band readings
+        - lower_band: Array of lower Bollinger band readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Bollinger_Bands
+        - Original Source: N/A
     """
     type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
@@ -75,11 +118,28 @@ def bollinger_bands(price_array: np.ndarray, period: int=50, n_std: int=2) -> di
 
 
 
-def rsi(price_array: np.ndarray, period: int=14, oversold_band: float=30, overbought_band: float=70) -> dict:
+def rsi(price_array: np.ndarray, period: int=14, oversold_band: float=30, overbought_band: float=70) -> dict[str, np.ndarray]:
     """
-    Takes in an array of prices and returns a dataframe of RSI readings.
+    ## Description
     Relative Strength Index (RSI) is a momentum indicator that measures the magnitude of recent price changes to evaluate overbought
     or oversold conditions.
+    ### Input:
+        - price_array: Array of prices
+        - period: Size of the rolling window for the RSI
+        - oversold_band: Constant value of the oversold band
+        - overbought_band: Constant value of the overbought band
+    ### Output:
+        - u: Array of upward price changes
+        - d: Array of downward price changes
+        - u_smma: Array of smoothed modified moving average readings of upward price changes
+        - d_smma: Array of smoothed modified moving average readings of downward price changes
+        - rs: Array relative strength factor readings
+        - rsi_ Array of RSI readings
+        - oversold: Array of oversold band readings
+        - overbought: Array of overbought band readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Relative_strength_index
+        - Original Source: N/A
     """
     type_check(value=price_array, type_=np.ndarray, value_name="price_array")
     period = int(period)
@@ -111,15 +171,31 @@ def rsi(price_array: np.ndarray, period: int=14, oversold_band: float=30, overbo
         rsi_d_smma[i] = (rsi_d_smma[i-1]*(period-1) + rsi_d[i])/period
     rs = rsi_u_smma/rsi_d_smma
     rsi = 100 - 100/(1+rs)
-    return {"u":rsi_u, "d":rsi_d, "u_smma":rsi_u_smma, "rsi_d_smma":rsi_d_smma, "rs":rs, "rsi":rsi,
+    return {"u":rsi_u, "d":rsi_d, "u_smma":rsi_u_smma, "d_smma":rsi_d_smma, "rs":rs, "rsi":rsi,
             "oversold":oversold_band*np.ones(len(price_array)), "overbought":overbought_band*np.ones(len(price_array))}
 
 
 
-def adx(high_price: np.ndarray, low_price: np.ndarray, close_price: np.ndarray, period: int=14, benchmark: int=25) -> dict:
+def adx(high_price: np.ndarray, low_price: np.ndarray, close_price: np.ndarray, period: int=14, benchmark: int=25) -> dict[str, np.ndarray]:
     """
-    Takes in arrays of high, low and close prices, and returns a dataframe with +DI, -DI and ADX.
+    ## Description
     Average Directional Index (ADX) is an indicator that describes the relative strength of the trend.
+    ### Input:
+        - high_price: Array of high prices
+        - low_price: Array of low prices
+        - close_price: Array of close prices
+        - period: Size of the rolling window for ADX
+        - benchmark: Constant value of the benchmark array
+    ### Output:
+        - pdm: Array of directional movement up readings
+        - mdm: Array of directional movement down readings
+        - pdi: Array of positive directional indicator readings
+        - mdi: Array of negative directional indicator readings
+        - adx: Array of ADX readings
+        - benchmark: Array of benchmark readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Average_directional_movement_index
+        - Original Source: N/A
     """
     compare_array_len(array_1=close_price, array_2=high_price, array_1_name="close_price", array_2_name="high_price")
     compare_array_len(array_1=close_price, array_2=low_price, array_1_name="close_price", array_2_name="low_price")
@@ -173,8 +249,16 @@ def adx(high_price: np.ndarray, low_price: np.ndarray, close_price: np.ndarray, 
 
 def obv(close_price: np.ndarray, volume: np.ndarray) -> np.ndarray:
     """
-    Takes in arrays of price and volume and returns a dataframe of OBV readings.
+    ## Description
     On-Balance Volume (OBV) is an indicator that describes the relationship between price and volume in the market.
+    ### Input:
+        - close_price: Array of close prices
+        - volume: Volume of the stock
+    ### Output:
+        - Array of OBV readings
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/On-balance_volume
+        - Original Source: N/A
     """
     compare_array_len(array_1=close_price, array_2=volume, array_1_name="close_price", array_2_name="volume")
     obv = np.zeros(len(close_price))

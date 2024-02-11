@@ -12,11 +12,23 @@ from src.digifi.portfolio_applications.general import PortfolioInstrumentStruct
 
 @dataclass(slots=True)
 class ForwardRateAgreementStruct(DataClassValidation):
+    """
+    ## Description
+    Parameters for the ForwardRateAgreement class.
+    ### Input:
+        - agreed_fixed_rate: Agreed fixed rate of the contract
+        - current_forward_rate: Current market-derived forward rate of similar contracts
+        - time_to_maturity: Time to maturity of the contract
+        - principal: Principal of the forward rate agreement
+        - initial_price: Initial price of the forward rate contract
+        - compounding_type: Compounding type used to discount cashflows
+    """
     agreed_fixed_rate: float
     current_forward_rate: float
     time_to_maturity: float
     principal: float
     initial_price: float = 0.0
+    compounding_type: CompoundingType=CompoundingType.PERIODIC
 
     def validate_time_to_maturity(self, value: float, **_) -> float:
         if value<0:
@@ -34,6 +46,7 @@ class ForwardRateAgreementInterface(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def rate_adjustment(self, futures_rate: float, in_place: bool=False) -> float:
         """
+        ## Description
         Calculate forward rate adjustment based on futures rate.
         """
         raise NotImplementedError
@@ -44,7 +57,18 @@ def forward_interest_rate(zero_rate_1: float, time_1: float, zero_rate_2: float,
     """
     ## Description
     Forward interest rate for the period between time_1 and time_2.
-    R_{f}  \\frac{R_{2}T_{2} - R_{1}T_{1}}{T_{2} - T_{1}}.
+    ### Input:
+        - zero_rate_1: Zero rate at time step 1
+        - time_1: Time step 1
+        - zero_rate_2: Zero rate at time step 2
+        - time_2: Time step 2
+    ### Output:
+        - Forward rate from zero rate at time step 1 to zero rate at time step 2
+    ### LaTeX Formula:
+        - R_{f} = \\frac{R_{2}T_{2} - R_{1}T_{1}}{T_{2} - T_{1}}
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate
+        - Original Source: N/A
     """
     time_1 = float(time_1)
     time_2 = float(time_2)
@@ -55,8 +79,19 @@ def forward_interest_rate(zero_rate_1: float, time_1: float, zero_rate_2: float,
 def future_zero_rate(zero_rate_1: float, time_1: float, time_2: float, forward_rate: float) -> float:
     """
     ## Description
-    Zero rate defined through the previous zero rate and current forward rate.\n
-    R_{2} = \\frac{R_{F}(T_{2}-T_{1}) + R_{1}T_{1}}{T_{2}}
+    Zero rate defined through the previous zero rate and current forward rate.
+    ### Input:
+        - zero_rate_1: Zero rate at time step 1
+        - time_1: Time step 1
+        - time_2: Time step 2
+        - forward_rate: Current forward rate
+    ### Output:
+        - Zero rate at time step 2
+    ### LaTeX Formula:
+        - R_{2} = \\frac{R_{F}(T_{2}-T_{1}) + R_{1}T_{1}}{T_{2}}
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate
+        - Original Source: N/A
     """
     time_1 = float(time_1)
     time_2 = float(time_2)
@@ -68,6 +103,10 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
     """
     ## Description
     Forward rate agreement and its methods.
+    ### Input:
+        - forward_rate_agreement_struct: Parameters for defining a ForwardRayeAgreement instance
+        - financial_instrument_struct: Parameters for defining regulatory categorization of an instrument
+        - portfolio_instrument_struct: Parameters for defining historical data for portfolio construction and applications
     ## Links
     - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate_agreement
     - Original Source: N/A
@@ -78,22 +117,18 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
                                                                                                   identifier="0"),
                  portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
                                                                                                   portfolio_time_array=np.array([]),
-                                                                                                  portfolio_predicatble_income=np.array([])),
-                 compounding_type: CompoundingType=CompoundingType.PERIODIC, compounding_frequency: int=1) -> None:
+                                                                                                  portfolio_predicatble_income=np.array([]))) -> None:
         # Arguments validation
         type_check(value=forward_rate_agreement_struct, type_=ForwardRateAgreementStruct, value_name="forward_rate_agreement_struct")
         type_check(value=financial_instrument_struct, type_=FinancialInstrumentStruct, value_name="financial_instrument_struct")
         type_check(value=portfolio_instrument_struct, type_=PortfolioInstrumentStruct, value_name="portfolio_instrument_struct")
-        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
-        # ForwardRateAgreement class parameters
-        self.compounding_type = compounding_type
-        self.compounding_frequency = int(compounding_frequency)
         # ForwardRateAgreementStruct parameters
         self.agreed_fixed_rate = forward_rate_agreement_struct.agreed_fixed_rate
         self.current_forward_rate = forward_rate_agreement_struct.current_forward_rate
         self.time_to_maturity = forward_rate_agreement_struct.time_to_maturity
         self.principal = forward_rate_agreement_struct.principal
         self.initial_price = forward_rate_agreement_struct.initial_price
+        self.compounding_type = forward_rate_agreement_struct.compounding_type
         # FinancialInstrumentStruct parameters
         self.instrument_type = financial_instrument_struct.instrument_type
         self.asset_class = financial_instrument_struct.asset_class
@@ -109,7 +144,7 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
     def __latest_forward_rate(self, current_forward_rate: Union[float, None]=None) -> float:
         """
         ## Description
-        Latest forward rate of the contract.
+        Latest forward rate of the contract.\n
         Helper method to update current_forward_rate during calculations.
         """
         if isinstance(current_forward_rate, type(None)) is False:
@@ -121,7 +156,7 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
     def __latest_time_to_maturity(self, current_time_to_maturity: Union[float, None]=None) -> float:
         """
         ## Description
-        Latest time to maturity.
+        Latest time to maturity.\n
         Helper method to update time_to_maturity during calculations.
         """
         if isinstance(current_time_to_maturity, type(None))==False:
@@ -133,20 +168,48 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
     def present_value(self, current_forward_rate: Union[float, None]=None, current_time_to_maturity: Union[float, None]=None) -> float:
         """
         ## Description
-        PV = \\tau(R_{F} - R_{K})L
+        Present values of the forward rate agreement.
+        ### Input:
+            - current_forward_rate: Current market forward rate (If none given, the current_forward_rate from the instance definition will be used)
+            - current_time_to_maturity: Current time too maturity (If none given, the time_to_maturity from the instance definition will be used)
+        ### Output:
+            - Present value of the forward rate agreement
+        ### LaTeX Formula:
+            - PV = \\tau(R_{F} - R_{K})L
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate_agreement#Valuation_and_pricing
+            - Original Source: N/A
         """
         current_time_to_maturity = self.__latest_time_to_maturity(current_time_to_maturity=current_time_to_maturity)
         current_forward_rate = self.__latest_forward_rate(current_forward_rate=current_forward_rate)
-        discount_term = Compounding(rate=current_forward_rate, compounding_type=self.compounding_type, compounding_frequency=self.compounding_frequency)
+        discount_term = Compounding(rate=current_forward_rate, compounding_type=self.compounding_type, compounding_frequency=1)
         return (current_time_to_maturity * (current_forward_rate - self.agreed_fixed_rate) * self.principal) * discount_term.compounding_term(time=current_time_to_maturity)
 
     def net_present_value(self, current_forward_rate: Union[float, None]=None, current_time_to_maturity: Union[float, None]=None) -> float:
+        """
+        ## Description
+        Net present value of the forward rate agreement.
+        ### Input:
+            - current_forward_rate: Current market forward rate (If none given, the current_forward_rate from the instance definition will be used)
+            - current_time_to_maturity: Current time too maturity (If none given, the time_to_maturity from the instance definition will be used)
+        ### Output:
+            - Present value of the forward rate agreement minus the initial price it took to purchase the contract
+        """
         return -self.initial_price + self.present_value(current_forward_rate=current_forward_rate,
                                                         current_time_to_maturity=current_time_to_maturity)
     
     def future_value(self, current_forward_rate: Union[float, None]=None, current_time_to_maturity: Union[float, None]=None) -> float:
+        """
+        ## Description
+        Future value of the forward rate agreement.
+        ### Input:
+            - current_forward_rate: Current market forward rate (If none given, the current_forward_rate from the instance definition will be used)
+            - current_time_to_maturity: Current time too maturity (If none given, the time_to_maturity from the instance definition will be used)
+        ### Output:
+            - Future value of the forward rate agreement at it maturity (Computed from the present value of the forward rate agreement)
+        """
         current_time_to_maturity = self.__latest_time_to_maturity(current_time_to_maturity=current_time_to_maturity)
-        discount_term = Compounding(rate=current_forward_rate, compounding_type=self.compounding_type, compounding_frequency=self.compounding_frequency)
+        discount_term = Compounding(rate=current_forward_rate, compounding_type=self.compounding_type, compounding_frequency=1)
         return self.present_value(current_forward_rate=current_forward_rate, current_time_to_maturity=current_time_to_maturity)/discount_term.compounding_term(time=current_time_to_maturity)
     
     def forward_rate_from_zero_rates(self, zero_rate_1: float, time_1: float, zero_rate_2: float, time_2: float,
@@ -154,7 +217,19 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
         """
         ## Description
         Forward interest rate for the period between time_1 and time_2.
-        R_{f}  \\frac{R_{2}T_{2} - R_{1}T_{1}}{T_{2} - T_{1}}.
+        ### Input:
+            - zero_rate_1: Zero rate at time step 1
+            - time_1: Time step 1
+            - zero_rate_2: Zero rate at time step 2
+            - time_2: Time step 2
+            - in_place: Overwrite current_forward_rate with the obtained forward rate
+        ### Output:
+            - Forward rate from zero rate at time step 1 to zero rate at time step 2
+        ### LaTeX Formula:
+            - R_{f} = \\frac{R_{2}T_{2} - R_{1}T_{1}}{T_{2} - T_{1}}
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate
+            - Original Source: N/A
         """
         forward_rate = forward_interest_rate(zero_rate_1=zero_rate_1, time_1=time_1, zero_rate_2=zero_rate_2, time_2=time_2)
         if bool(in_place):
@@ -164,8 +239,19 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
     def zero_rate_from_forward_rate(self, zero_rate_1: float, time_1: float, time_2: float, current_forward_rate: Union[float, None]=None) -> float:
         """
         ## Description
-        Zero rate defined through the previous zero rate and current forward rate.\n
-        R_{2} = \\frac{R_{F}(T_{2}-T_{1}) + R_{1}T_{1}}{T_{2}}
+        Zero rate defined through the previous zero rate and current forward rate.
+        ### Input:
+            - zero_rate_1: Zero rate at time step 1
+            - time_1: Time step 1
+            - time_2: Time step 2
+            - current_forward_rate: Current market forward rate (If none given, the current_forward_rate from the instance definition will be used)
+        ### Output:
+            - Zero rate at time step 2
+        ### LaTeX Formula:
+            - R_{2} = \\frac{R_{F}(T_{2}-T_{1}) + R_{1}T_{1}}{T_{2}}
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Forward_rate
+            - Original Source: N/A
         """
         current_forward_rate = self.__latest_forward_rate(current_forward_rate=current_forward_rate)
         return future_zero_rate(zero_rate_1=zero_rate_1, time_1=time_1, time_2=time_2, forward_rate=current_forward_rate)
@@ -175,6 +261,14 @@ class ForwardRateAgreement(FinancialInstrumentInterface, ForwardRateAgreementInt
         ## Description
         Adjustment of the forward rate based on futures rate.\n
         Forward Rate = Futures Rate - Convexity Adjustment.
+        ### Input:
+            - futures_rate: Current futures contract rate
+            - convexity_sdjustment: Convexity adjustment constant
+            - in_place: Overwrite current_forward_rate with the obtained forward rate
+        ### Output
+            - Forward rate of the contract
+        ### LaTeX Formula:
+            - \\textit{Forward Rate} = \\textit{Futures Rate} - \\textit{C}
         """
         convexity_adjustment = float(convexity_adjustment)
         if convexity_adjustment<=0:

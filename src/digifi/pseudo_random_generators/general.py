@@ -12,6 +12,7 @@ class PseudoRandomGeneratorInterface(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def generate(self) -> np.ndarray:
         """
+        ## Description
         Array of generated pseudo-random numbers. 
         """
         raise NotImplementedError

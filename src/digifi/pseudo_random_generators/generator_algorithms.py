@@ -25,13 +25,13 @@ def inverse_transform_method(f_x: Callable, sample_size: int=10_000, seed: int=1
 
 
 
-def box_muller_algorithm(uniform_array_1: np.ndarray, uniform_array_2: np.ndarray) -> (np.ndarray, np.ndarray):
+def box_muller_algorithm(uniform_array_1: np.ndarray, uniform_array_2: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return (np.sqrt(-2*np.log(uniform_array_1))*np.cos(2*np.pi*uniform_array_2),
             np.sqrt(-2*np.log(uniform_array_1))*np.sin(2*np.pi*uniform_array_2))
 
 
 
-def marsaglia_method(max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=32_456) -> (float, float):
+def marsaglia_method(max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=32_456) -> tuple[float, float]:
     w_1 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_1, sample_size=max_iterations).generate() - 1
     w_2 = 2*FibonacciPseudoRandomNumberGenerator(seed=seed_2, sample_size=max_iterations).generate() - 1
     i = 0

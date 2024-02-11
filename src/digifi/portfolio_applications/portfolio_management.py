@@ -16,6 +16,13 @@ class Portfolio(PortfolioInterface):
     """
     ## Description
     Portfolio of assets.
+    ### Input:
+        - assets: Dictionary of price series for assets labelled with the asset name as the key
+        - weights: Array of weights assigtned to each asset in the portfolio
+        - predictable_income: Array of preditable income readings (e.g., dividends for stocks, copouns for bonds, overnight fees, etc.)
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Modern_portfolio_theory#Markowitz_bullet
+        - Original Source: https://doi.org/10.2307%2F2975974
     """
     def __init__(self, assets: dict[str, np.ndarray], weights: np.ndarray, predictable_income: dict[str, np.ndarray]=dict()) -> None:
         # Assets type validation
@@ -34,9 +41,17 @@ class Portfolio(PortfolioInterface):
         self.change_weights(weights=weights)
     
     def __select_test_asset(self, assets: dict[np.ndarray]) -> tuple[str, np.ndarray]:
+        """
+        ## Description
+        Selection of asset to validate other assets against.
+        """
         return (list(assets.keys())[0], list(assets.values())[0])
     
     def __validate_portfolio_definition(self, weights: np.ndarray, assets: dict[np.ndarray]) -> None:
+        """
+        ## Description
+        Validate number of assets vs number of weights
+        """
         if len(weights)!=len(assets):
             raise ValueError("The number of weights has to coincide with the number of assets provided.")
     
@@ -73,6 +88,8 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Update weights of the portfolio of assets.
+        ### Input:
+            - weights: Array of weights assigtned to each asset in the portfolio
         """
         # Arguments validation
         type_check(value=weights, type_=np.ndarray, value_name="weights")
@@ -86,6 +103,10 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Add asset to the portfolio.
+        ### Input:
+            - new_asset_identifier: Identifier/name of the new asset
+            - new_asset_prices: Price series of the new asset
+            - new_asset_predictable_income: Array of preditable income readings of the new asset (e.g., dividends for stocks, copouns for bonds, overnight fees, etc.)
         """
         # Arguments validation
         new_asset_identifier = str(new_asset_identifier)
@@ -106,6 +127,8 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Remove asset from the portfolio.
+        ### Input:
+            - asset_identifier: Identifier/name of the asset
         """
         if asset_identifier in list(self.assets.keys()):
             del self.assets[asset_identifier]
@@ -124,6 +147,13 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate returns for the provided operation type.
+        ### Input:
+            - operation_type: Type of returns to compute (i.e., RETURNS_OF_ASSETS - for returns of each asset individually,
+            WEIGHTED_RETURNS_OF_ASSETS - for weighted returens of each asset individually, PORTFOLIO_RETURNS - for returns of the portfolio of assets,
+            CUMULATIVE_PORTFOLIO_RETURNS - for cumulative returns of the portfolio)
+            - untensorize_result: Return dictionary of asset returns (Used only for RETURNS_OF_ASSETS and WEIGHTED_RETURNS_OF_ASSETS)
+        ### Output:
+            - Returns of assets/portfolio
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         tensorized_result = self.__tensorize_assets()
@@ -156,6 +186,11 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate the mean return of the portfolio.
+        ### Input:
+            - n_periods: Number of periods used to estimate the mean over (e.g., for daily prices n_periods=252 produces annualized mean)
+            - method: Method for computing mean
+        ### Output:
+            - Mean of the portfolio returns
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
@@ -169,6 +204,11 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate the covariance of the portfolio.
+        ### Input:
+            - n_periods: Number of periods used to estimate the covariance over (e.g., for daily prices n_periods=252 produces annualized covariance)
+            - untensorize_result: Return dictionary of asset returns (Used only for RETURNS_OF_ASSETS and WEIGHTED_RETURNS_OF_ASSETS)
+        ### Output:
+            - Covariance of asset returns
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
@@ -182,6 +222,10 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate the standard deviation of the portfolio.
+        ### Input:
+            - n_periods: Number of periods used to estimate the volatility over (e.g., for daily prices n_periods=252 produces annualized volatility)
+        ### Output:
+            - Standard deviavion of the portfolio returns
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         n_periods = int(n_periods)
@@ -192,6 +236,8 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate the autocorrelation of portfolio returns.
+        ### Output:
+            - Autocorrelation of the portfolio returns
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         portfolio_returns = self.array_returns(operation_type=ArrayRetrunsType.PORTFOLIO_RETURNS)
@@ -201,8 +247,14 @@ class Portfolio(PortfolioInterface):
     def sharpe_ratio(self, r: float, n_periods: int=252, method: ReturnsMethod=ReturnsMethod.IMPLIED_AVERAGE_RETURN) -> float:
         """
         ## Description
-        Sharpe ratio = (portfolio returns - risk-free rate) / portfolio standard deviation
-        Calculate the Sharpe ratio of the portfolio.
+        Calculate the Sharpe ratio of the portfolio.\n
+        Sharpe Ratio = (Portfolio Returns - Risk-Free Rate) / Portfolio Standard Deviation
+        ### Input:
+            - r: Risk-free rate of return
+            - n_periods: Number of periods used to estimate the parameters over (e.g., for daily prices n_periods=252 produces annualized parameter)
+            - method: Method for computing mean
+        ### Output:
+            - Sharpe ratio of the portfolio with given weights 
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         r = float(r)
@@ -215,6 +267,8 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Unsafe change of weights for the purpose of numerical solution only. Does not check whether weights sum up to 1.
+        ### Input:
+            - weights: Array of weights assigtned to each asset in the portfolio
         """
         type_check(value=weights, type_=np.ndarray, value_name="weights")
         self.__validate_portfolio_definition(weights=weights, assets=self.assets)
@@ -250,6 +304,15 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Find portfolio with maximum Sharpe ratio.
+        ### Input:
+            - r: Risk-free rate of returns
+            - n_periods: Number of periods used to estimate the parameters over (e.g., for daily prices n_periods=252 produces annualized parameter)
+            - method: Method for computing mean
+            - weight_constraint: Range for weights of assets
+            - verbose: Print portfolio weights amd sharpe ratio to the terminal
+            - result_type: Result type to return (i.e., VALUE - to return value of the function, WEIGHTS - to return weights of the portfolio)
+        ### Output:
+            - Maximized Sharpe ratio
         """
         # Arguments validation
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
@@ -277,6 +340,13 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Find portfolio with lowest standard deviation.
+        ### Input:
+            - n_periods: Number of periods used to estimate the parameters over (e.g., for daily prices n_periods=252 produces annualized parameter)
+            - weight_constraint: Range for weights of assets
+            - verbose: Print portfolio weights amd sharpe ratio to the terminal
+            - result_type: Result type to return (i.e., VALUE - to return value of the function, WEIGHTS - to return weights of the portfolio)
+        ### Output:
+            - Minimized standard deviation
         """
         # Arguments validation
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
@@ -304,6 +374,15 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Find risk level on the efficient frontier for a given target return.
+        ### Input:
+            - return_target: Expected return to optimize volatility for
+            - n_periods: Number of periods used to estimate the parameters over (e.g., for daily prices n_periods=252 produces annualized parameter)
+            - method: Method for computing mean
+            - weight_constraint: Range for weights of assets
+            - verbose: Print portfolio weights amd sharpe ratio to the terminal
+            - result_type: Result type to return (i.e., VALUE - to return value of the function, WEIGHTS - to return weights of the portfolio)
+        ### Output:
+            - Portfolio on the efficient frontier for a given return_target
         """
         # Arguments validation
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
@@ -332,6 +411,16 @@ class Portfolio(PortfolioInterface):
         """
         ## Description
         Calculate efficient frontier.
+        ### Input:
+            - r: Risk-free rate of return
+            - frontier_points: Number of points to generate
+            - n_periods: Number of periods used to estimate the parameters over (e.g., for daily prices n_periods=252 produces annualized parameter)
+            - method: Method for computing mean
+            - weight_constraint: Range for weights of assets
+        ### Output:
+            - min_vol: Return and standrad deviation of minimum volatility portfolio
+            - eff: Returns and standard deviations of portfolios on the efficient frontier
+            - max_sr: Return and standard deviation of maximum Sharpe ratio portfolio
         """
         self.__validate_portfolio_definition(weights=self.weights, assets=self.assets)
         frontier_n_points = int(frontier_n_points)
@@ -360,6 +449,12 @@ class InstrumentsPortfolio(Portfolio):
     """
     ## Description
     Portfolio that consists of financial instuments that have PortfolioInstumentStruct defined for them.
+    ### Input:
+        - instruments: List of instruments to build the market from
+        - weights: Array of weights assigtned to each asset in the portfolio
+    ## Links
+        - Wikipedia: https://en.wikipedia.org/wiki/Modern_portfolio_theory#Markowitz_bullet
+        - Original Source: https://doi.org/10.2307%2F2975974
     """
     def __init__(self, instruments: List[Union[Bond, FuturesContract, Option, ForwardRateAgreement, Stock]],
                  weights: np.ndarray) -> None:
@@ -382,6 +477,8 @@ class InstrumentsPortfolio(Portfolio):
         """
         ## Description
         Add asset to the portfolio.
+        ### Input:
+            - new_instrument: New instrument
         """
         self.__verify_instrument(instrument=new_instrument, assets=self.assets)
         super().add_asset(new_asset_identifier=new_instrument.identifier, new_asset_prices=new_instrument.portfolio_price_array,
@@ -391,6 +488,8 @@ class InstrumentsPortfolio(Portfolio):
         """
         ## Description
         Remove asset from the portfolio.
+        ### Input:
+            - instrument_identifier: Identifier/name of the instrument
         """
         if instrument_identifier in list(self.assets.keys()):
             del self.assets[instrument_identifier]

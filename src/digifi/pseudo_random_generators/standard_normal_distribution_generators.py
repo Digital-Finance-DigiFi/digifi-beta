@@ -63,7 +63,7 @@ class StandardNormalBoxMullerAlgorithmPseudoRandomNumberGenerator(PseudoRandomGe
         self.seed_1 = int(seed_1)
         self.seed_2 = int(seed_2)
     
-    def generate(self) -> (np.ndarray, np.ndarray):
+    def generate(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Two independent arrays of pseudo-random generated numbers based on the Box-Muller Algorithm.
         """
@@ -85,7 +85,7 @@ class StandardNormalMarsagliaMethodPseudoRandomNumberGenerator(PseudoRandomGener
         self.seed_1 = int(seed_1)
         self.seed_2 = int(seed_2)
     
-    def generate(self) -> (np.ndarray, np.ndarray):
+    def generate(self) -> tuple[np.ndarray, np.ndarray]:
         """
         Two independent arrays of pseudo-random generated numbers based on the Marsaglie Method.
         """

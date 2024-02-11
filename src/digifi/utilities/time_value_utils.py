@@ -20,6 +20,14 @@ class Cashflow:
     """
     ## Description
     Base class for generating cashflow array with a base cashflow growth rate and inflation rate.
+    ### Input:
+        - cashflow: Series of cashflows
+        - final_time: Time of the last cashflow
+        - start_time: Time of the initial cashflow
+        - time_step: Time difference between consequtive cashflows
+        - time_array: Array of time steps
+        - cashflow_growth_rate: Growth rate of the cashflow
+        - inflation_rate: Inflation rate to discount cashflows by
     """
     def __init__(self, cashflow: Union[np.ndarray, float], final_time: float, start_time: float=1, time_step: float=1,
                  time_array: Union[np.ndarray, None]=None, cashflow_growth_rate: float=0, inflation_rate: float=0) -> None:
@@ -69,9 +77,17 @@ def present_value(cashflow: np.ndarray, time_array: np.ndarray, rate: Union[np.n
     """
     ## Description
     Present value of the cashflow discounted at a certain rate for every time period.
+    ### Input:
+        - cashflow: Array of cashflows
+        - time_array: Array of time steps
+        - rate: Value (array) of discount rate(s)
+        - compounding_type: Compounding type used to discount cashflows
+        - compounding_frequency: Compounding frequency of cashflows
+    ### Output:
+        - Present value of series of cashflows
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Present_value
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Present_value
+        - Original Source: N/A
     """
     compare_array_len(array_1=cashflow, array_2=time_array, array_1_name="cashflow", array_2_name="time_array")
     if isinstance(rate, float) or isinstance(rate, int):
@@ -96,11 +112,20 @@ def net_present_value(initial_cashflow: float, cashflow: np.ndarray, time_array:
     """
     ## Description
     Net present value of the series of cashflows.
+    ### Input:
+        - initial_cashflow: Initial cashflow
+        - cashflow: Array of cashflows
+        - time_array: Array of time steps
+        - rate: Value (array) of discount rate(s)
+        - compounding_type: Compounding type used to discount cashflows
+        - compounding_frequency: Compounding frequency of cashflows
+    ### Output:
+        - Present value of series of cashflows minus the initial cashflow
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Present_value#Net_present_value_of_a_stream_of_cash_flows
-    - Original SOurce: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Present_value#Net_present_value_of_a_stream_of_cash_flows
+        - Original Source: N/A
     """
-    return -initial_cashflow+present_value(cashflow=cashflow, time_array=time_array, rate=rate,
+    return -initial_cashflow + present_value(cashflow=cashflow, time_array=time_array, rate=rate,
                                            compounding_type=compounding_type, compounding_frequency=compounding_frequency)
 
 
@@ -110,9 +135,17 @@ def future_value(current_value: float, rate: float,  time: float, compounding_ty
     """
     ## Description
     Future value of the cashflow with a certain interest rate at a specific time.
+    ### Input:
+        - current_value: Present value
+        - rate: Discount rate
+        - time: Time for which the future value is evaluated
+        - compounding_type: Compounding type used to discount cashflows
+        - compounding_frequency: Compounding frequency of cashflows
+    ### Output:
+        - Future value of the current cashflow
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Future_value
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Future_value
+        - Original Source: N/A
     """
     if (rate<-1) or (1<rate):
         raise ValueError("The argument rate must be defined in in the interval [-1,1].")
@@ -127,9 +160,17 @@ def internal_rate_of_return(initial_cashflow: float, cashflow: np.ndarray, time_
     """
     ## Description
     Computes the internal rate of return under a certain compounding for the given series of cashflows.
+    ### Input:
+        - initial_cashflow: Initial cashflow
+        - cashflow: Array of cashflows
+        - time_array: Array of time steps
+        - compounding_type: Compounding type used to discount cashflows
+        - compounding_frequency: Compounding frequency of cashflows
+    ### Output:
+        - Internal rate of return that yields the initial cashflow by discounting future cashflows
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Internal_rate_of_return
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Internal_rate_of_return
+        - Original Source: N/A
     """
     def cashflow_series(rate: float) -> float:
         return present_value(cashflow=cashflow, time_array=time_array, rate=float(rate), compounding_type=compounding_type,
@@ -142,6 +183,12 @@ def ptp_compounding_transformation(current_rate: float, current_frequency: int, 
     """
     ## Description
     Periodic-to-periodic compounding transformation between different compounding frequencies.
+    ### Inputs:
+        - current_rate: Current periodic discount rate
+        - current_frequency: Current compounding frequency
+        - new_frequency: New compounding frequency
+    ### Output:
+        - New periodic discount rate
     """
     new_rate = new_frequency*((1+current_rate/current_frequency)**(current_frequency/new_frequency)-1)
     return new_rate
@@ -152,6 +199,11 @@ def ptc_compounding_transformation(periodic_rate: float, periodeic_frequency: in
     """
     ## Description
     Periodic-to-continuous compounding transformation.
+    ### Inputs:
+        - periodic_rate: Current periodic discount rate
+        - periodic_frequency: Current compounding frequency
+    ### Output:
+        - Continuous discount rate
     """
     continuous_rate = periodeic_frequency*np.log(1+periodic_rate/periodeic_frequency)
     return continuous_rate
@@ -162,6 +214,11 @@ def ctp_compounding_transformation(continuous_rate: float, periodic_frequency: i
     """
     ## Description
     Continuous-to-periodic compounding transformation.
+    ### Inputs:
+        - continuous_rate: Current continuous discount rate
+        - periodic_frequency: Periodic compounding frequency
+    ### Output:
+        - Periodic discount rate
     """
     periodic_rate = periodic_frequency*(np.exp(continuous_rate/periodic_frequency)-1)
     return periodic_rate
@@ -172,6 +229,11 @@ def real_interest_rate(nominal_interest_rate: float, inflation: float) -> float:
     """
     ## Description
     A conversion from nominal interest rate to real interest rate based on inflation.
+    ### Input:
+        - nominal_interest_rate: Nominal interest rate
+        - inflation: Rate of inflation
+    ### Output:
+        - Real interest rate
     """
     real_interest_rate = (1+nominal_interest_rate)/(1+inflation)-1
     return real_interest_rate
@@ -181,11 +243,14 @@ def real_interest_rate(nominal_interest_rate: float, inflation: float) -> float:
 class Compounding:
     """
     ## Description
-    Different compounding techniques and methods.\n
-    Compounding term is defined as the discounting terms for future cashflows.
+    Different compounding techniques and methods.
+    ### Input:
+        - rate: Discount rate
+        - compounding_type: Compounding type used to discount cashflows
+        - compounding_frequency: Compounding frequency of cashflows
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Compound_interest
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Compound_interest
+        - Original Source: N/A
     """
     def __init__(self, rate: float, compounding_type: CompoundingType=CompoundingType.CONTINUOUS, compounding_frequency: int=1) -> None:
         # Arguments validation
@@ -205,7 +270,12 @@ class Compounding:
     def compounding_term(self, time: float) -> float:
         """
         ## Description
-        Defines a compounding term with either continuous or periodic compounding.
+        Defines a compounding term with either continuous or periodic compounding.\n
+        Note: Compounding term is defined as the discounting terms for future cashflows.
+        ### Input:
+            - time: Time at which to discount
+        ### Output:
+            - Discounting term for future cashflows
         """
         match self.compounding_type:
             case CompoundingType.CONTINUOUS:
@@ -244,6 +314,9 @@ class Compounding:
         """
         ## Description
         Converts one compounding type an frequency to another type or frequency.
+        ### Input:
+            - new_compounding_type: Compounding type to convert to
+            - new_compounding_frequency: New compounding frequency
         """
         if (new_compounding_type==CompoundingType.PERIODIC) and (new_compounding_frequency<=0):
             raise ValueError("For periodic compouning the compounding_frequency must be defined.")
@@ -262,9 +335,14 @@ class Perpetuity:
     """
     ## Description
     A series of fixed income cashflows paid out each time step forever.
+    ### Input:
+        - perpetuity_cashflow: Constant cashflow of the perpetuity (Initial cashflow for a perpetuity with non-zero growth rate)
+        - rate: Discount rate
+        - perpetuity_growth_rate: Growth rate of the cashflow at eadch time step
+        - compounding_type: Compounding type used to discount cashflows
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Perpetuity
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Perpetuity
+        - Original Source: N/A
     """
     def __init__(self, perpetuity_cashflow: float, rate: float, perpetuity_growth_rate: float=0.0,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC) -> None:
@@ -278,6 +356,10 @@ class Perpetuity:
         self.compounding_type = compounding_type
 
     def present_value(self) -> float:
+        """
+        ## Discription
+        Present value of the perpetuity.
+        """
         match self.compounding_type:
             case CompoundingType.PERIODIC:
                 return self.perpetuity_cashflow / (self.rate-self.perpetuity_growth_rate)
@@ -285,9 +367,17 @@ class Perpetuity:
                 return self.perpetuity_cashflow * np.exp(-self.perpetuity_growth_rate) / (np.exp(self.rate-self.perpetuity_growth_rate) - 1)
     
     def net_present_value(self, initial_cashflow: float) -> float:
+        """
+        # Description
+        Net present value of the perpetuity.
+        """
         return -initial_cashflow + self.present_value()
     
     def future_value(self, final_time: float) -> float:
+        """
+        ## Description
+        Future value of the perpetuity.
+        """
         match self.compounding_type:
             case CompoundingType.PERIODIC:
                 return self.present_value() * (1+self.rate)**(final_time)
@@ -300,9 +390,14 @@ class Annuity:
     """
     ## Description
     A series of fixed income cashflows paid out for a specified number of time periods periods.
+    ### Input:
+        - annuity_cashflow: Constant cashflow of the annuity (Initial cashflow for an annuity with non-zero growth rate)
+        - rate: Discount rate
+        - annuity_growth_rate: Growth rate of the cashflow at eadch time step
+        - compounding_type: Compounding type used to discount cashflows
     ## Links
-    - Wikipedia: https://en.wikipedia.org/wiki/Annuity
-    - Original Source: N/A
+        - Wikipedia: https://en.wikipedia.org/wiki/Annuity
+        - Original Source: N/A
     """
     def __init__(self, annuity_cashflow: float, rate: float, final_time: float, annuity_growth_rate: float=0.0,
                  compounding_type: CompoundingType=CompoundingType.PERIODIC) -> None:
@@ -317,6 +412,10 @@ class Annuity:
         self.compounding_type = compounding_type
 
     def present_value(self) -> float:
+        """
+        ## Discription
+        Present value of the annuity.
+        """
         match self.compounding_type:
             case CompoundingType.PERIODIC:
                 return self.annuity_cashflow / (self.rate-self.annuity_growth_rate) * (1-((1+self.annuity_growth_rate)/(1+self.rate))**self.final_time)
@@ -325,9 +424,17 @@ class Annuity:
                         (1-np.exp((self.annuity_growth_rate-self.rate)*self.final_time)))
     
     def net_present_value(self, initial_cashflow: float) -> float:
+        """
+        # Description
+        Net present value of the annuity.
+        """
         return -initial_cashflow + self.present_value()
     
     def future_value(self) -> float:
+        """
+        ## Description
+        Future value of the annuity.
+        """
         match self.compounding_type:
             case CompoundingType.PERIODIC:
                 return self.present_value() * (1+self.rate)**(self.final_time)

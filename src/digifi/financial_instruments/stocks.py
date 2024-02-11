@@ -26,6 +26,15 @@ class StockValuationType(Enum):
 
 @dataclass(slots=True)
 class ValuationByComparablesParams(DataClassValidation):
+    """
+    ## Description
+    Parameters for valuation by comparables.
+    ### Input:
+        - valuations: Array of valuations of the companies
+        - pe_ratios: Array of P/E ratios of the companies
+        - pb_ratios: Array of P/B ratios of the companies
+        - ev_to_ebitda: Array of EV/EBITDA ratios of the companies
+    """
     valuations: np.ndarray
     pe_ratios: Union[np.ndarray, None]
     pb_ratios: Union[np.ndarray, None]
@@ -63,14 +72,29 @@ class ValuationByComparablesParams(DataClassValidation):
 
 @dataclass(slots=True)
 class StockStruct(DataClassValidation):
+    """
+    ## Description
+    Parameters for the Stock class.
+    ### Input:
+        - price_per_share: Price per share
+        - n_shares_outsdtanding: Number of shares outstanding
+        - dividend_per_share: Dividend per share
+        - Earnings_per_share: Earnings per share (EPS)
+        - quote_values: Determines how output of Stock classs methods will be quoted (i.e., PER_SHARE - for values per share, TOTAL - for total values)
+        - compounding_type: Compounding type used to discount cashflows
+        - dividend_growth_rate: Growth rate of the dividend payouts
+        - dividend_compounding_frequency: Compounding frequency of the dividend payouts
+        - initial_price: Initial price at which the stock is purchased
+    """
     price_per_share: float
     n_shares_outstanding: int
     dividend_per_share: float
     earnings_per_share: float
     quote_values: QuoteValues
+    initial_price: float = 0.0
+    compounding_type: CompoundingType = CompoundingType.PERIODIC
     dividend_growth_rate: float = 0.0
     dividend_compounding_frequency: float = 1.0
-    initial_price: float = 0.0
 
 
 
@@ -141,6 +165,13 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
     """
     ## Description
     Stock financial instrument and its methods.
+    ### Input:
+        - stock_struct: Parameters for defining a Stock instance
+        - financial_instrument_struct: Parameters for defining regulatory categorization of an instrument
+        - portfolio_instrument_struct: Parameters for defining historical data for portfolio construction and applications
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Stock
+    - Original Source: N/A
     """
     def __init__(self, stock_struct: StockStruct,
                  financial_instrument_struct: FinancialInstrumentStruct=FinancialInstrumentStruct(instrument_type=FinancialInstrumentType.CASH_INSTRUMENT,
@@ -148,24 +179,21 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
                                                                                                   identifier="0"),
                  portfolio_instrument_struct: PortfolioInstrumentStruct=PortfolioInstrumentStruct(portfolio_price_array=np.array([]),
                                                                                                   portfolio_time_array=np.array([]),
-                                                                                                  portfolio_predicatble_income=np.array([])),
-                 compounding_type: CompoundingType=CompoundingType.PERIODIC) -> None:
+                                                                                                  portfolio_predicatble_income=np.array([]))) -> None:
         # Arguments validation
         type_check(value=stock_struct, type_=StockStruct, value_name="stock_struct")
         type_check(value=financial_instrument_struct, type_=FinancialInstrumentStruct, value_name="financial_instrument_struct")
         type_check(value=portfolio_instrument_struct, type_=PortfolioInstrumentStruct, value_name="portfolio_instrument_struct")
-        type_check(value=compounding_type, type_=CompoundingType, value_name="compounding_type")
-        # Stock class parameters
-        self.compounding_type = compounding_type
         # StockStruct parameters
         self.price_per_share = stock_struct.price_per_share
         self.n_shares_outstanding = stock_struct.n_shares_outstanding
         self.dividend_per_share = stock_struct.dividend_per_share
         self.earnings_per_share = stock_struct.earnings_per_share
         self.quote_values = stock_struct.quote_values
+        self.initial_price = stock_struct.initial_price
+        self.compounding_type = stock_struct.compounding_type
         self.dividend_growth_rate_ = stock_struct.dividend_growth_rate
         self.dividend_compounding_frequency = stock_struct.dividend_compounding_frequency
-        self.initial_price = stock_struct.initial_price
         # FinancialInstrumentStruct parameters
         self.instrument_type = financial_instrument_struct.instrument_type
         self.asset_class = financial_instrument_struct.asset_class
@@ -196,6 +224,22 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
                       expected_dividend: Union[float, None]=None,
                       # Valuation by comparables
                       pe: float=0.0, pb: float=0.0, ev_to_ebitda: float=0.0, valuation_params: Union[ValuationByComparablesParams, None]=None) -> float:
+        """
+        ## Descdription
+        Present value of the stock.
+        ### Input:
+            - stock_valuation_method: Method for performing stock valuation (i.e., DIVIDEND_DISCOUNT_MODEL or VALUATION_BY_COMPARABLES)
+            - expected_dividend: Expected dividend amount to be earned in the future (Used for computing cost of equity capital in the DIVIDEND_DISCOUNT_MODEL)
+            - pe: Current P/E ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - pb: Current P/B ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - ev_to_ebitda: Current EV/EBITDA ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - valuation_params: Parameters of similar stocks (Used for VALUATION_BU_COMPARABLES)
+        ### Output:
+            - Present value of the stock
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Dividend_discount_model, https://en.wikipedia.org/wiki/Valuation_using_multiples
+            - Original Source: N/A
+        """
         type_check(value=stock_valuation_method, type_=StockValuationType, value_name="stock_valuation_method")
         match stock_valuation_method:
             case StockValuationType.DIVIDEND_DISCOUNT_MODEL:
@@ -210,6 +254,19 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
                           expected_dividend: Union[float, None]=None,
                           # Valuation by comparables
                           pe: float=0.0, pb: float=0.0, ev_to_ebitda: float=0.0, valuation_params: Union[ValuationByComparablesParams, None]=None) -> float:
+        """
+        ## Descdription
+        Net present value of the stock.
+        ### Input:
+            - stock_valuation_method: Method for performing stock valuation (i.e., DIVIDEND_DISCOUNT_MODEL or VALUATION_BY_COMPARABLES)
+            - expected_dividend: Expected dividend amount to be earned in the future (Used for computing cost of equity capital in the DIVIDEND_DISCOUNT_MODEL)
+            - pe: Current P/E ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - pb: Current P/B ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - ev_to_ebitda: Current EV/EBITDA ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - valuation_params: Parameters of similar stocks (Used for VALUATION_BU_COMPARABLES)
+        ### Output:
+            - Present value of the stock minus the initial price it took to purchase the stock
+        """
         return -self.initial_price + self.present_value(stock_valuation_method=stock_valuation_method, expected_dividend=expected_dividend,
                                                         pe=pe, pb=pb, ev_to_ebitda=ev_to_ebitda, valuation_params=valuation_params)
     
@@ -218,6 +275,20 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
                      expected_dividend: Union[float, None]=None,
                      # Valuation by comparables
                      pe: float=0.0, pb: float=0.0, ev_to_ebitda: float=0.0, valuation_params: Union[ValuationByComparablesParams, None]=None) -> float:
+        """
+        ## Descdription
+        Future value of the stock.
+        ### Input:
+            - time: Time at which the future value is computed
+            - stock_valuation_method: Method for performing stock valuation (i.e., DIVIDEND_DISCOUNT_MODEL or VALUATION_BY_COMPARABLES)
+            - expected_dividend: Expected dividend amount to be earned in the future (Used for computing cost of equity capital in the DIVIDEND_DISCOUNT_MODEL)
+            - pe: Current P/E ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - pb: Current P/B ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - ev_to_ebitda: Current EV/EBITDA ratio of the stock (Used for VALUATION_BY_COMPARABLES)
+            - valuation_params: Parameters of similar stocks (Used for VALUATION_BU_COMPARABLES)
+        ### Output:
+            - Future value of the stock at the given time (Computed from the present value of the stock)
+        """
         # Arguments validation
         type_check(value=stock_valuation_method, type_=StockValuationType, value_name="stock_valuation_method")
         # Future value encounting multiplier
@@ -233,7 +304,7 @@ class Stock(FinancialInstrumentInterface, StockInteraface):
         ## Description
         Computes the cost of equity capital (Market capitalization rate).\n
         Cost of Equity Capital = (Expected Dividend / Current Share Price) + Sustainable Growth Rate\n
-        Note: It is assumed that the sustainable growth rate is the dividend growth rate
+        Note: It is assumed that the sustainable growth rate is the dividend growth rate.
         ### Input:
             - expected_dividend: Expected dividend per share (If none provided, the dividend_per_share from the definition of the instance will be used instead)
         ### Output:

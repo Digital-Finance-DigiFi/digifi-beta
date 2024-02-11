@@ -179,22 +179,32 @@ def plowback_ratio(dividend_per_share: float, earnings_per_share: float) -> floa
 
 
 
-def altman_z_score(EBIT: float, total_assets:float, sales: float, assets: float, equity: float, total_liabilities: float,
+def altman_z_score(EBIT: float, total_assets:float, sales: float, equity: float, total_liabilities: float,
                    retained_earnings: float, working_capital: float) -> float:
     """
     ## Description
-    Z = 3.1\\frac{EBIT}{\\textit{Total Assets}} + 1.0\\frac{Sales}{Assets} + 0.42\\frac{Equity}{\\textit{Total Liabilities}} + 
-    0.85\\frac{\\textit{Retained Earning}}{\\textit{Total Assets}} + 0.72\\frac{\\textit{Working Capital}}{\\textit{Total Assets}}.\n
-    Result:
-        - Altman's Z-Score: If the value is below 1.23 - there is a high vulnerability to bankrupcy,
-        if the value is above 2.90 - there is a low vulnerability to bankrupcy.
+    Measure for predicting the likelihood of bankrupcy of a company.
+    ### Input:
+        - EBIT: EBIT of the company
+        - total_assets: Total assets of the company
+        - sales: Total sales of the company
+        - equity: Market value of equity
+        - total_liabilities: Total liabilities of the company
+        - retained_earnings: Retained earnings of the company
+        - working_capital: Working capital of the company
+    ### Output:
+        - Altman's Z-Score: If the value is below 1.81 - there is a high vulnerability to bankrupcy,
+        if the value is above 2.99 - there is a low vulnerability to bankrupcy
+    ### LaTeX Formula:
+        - Z = 3.3\\frac{EBIT}{\\textit{Total Assets}} + 1.0\\frac{Sales}{Assets} + 0.6\\frac{Equity}{\\textit{Total Liabilities}} + 
+    1.4\\frac{\\textit{Retained Earning}}{\\textit{Total Assets}} + 1.2\\frac{\\textit{Working Capital}}{\\textit{Total Assets}}
     ## Links
     - Wikipedia: https://en.wikipedia.org/wiki/Altman_Z-score
     - Origina Source: https://doi.org/10.1002/9781118266236.ch19
     """
     total_assets = float(total_assets)
-    return (3.1*float(EBIT)/float(total_assets) + float(sales)/float(assets) + 0.42*float(equity)/float(total_liabilities)
-            + 0.85*float(retained_earnings)/total_assets + 0.72*float(working_capital)/total_assets)
+    return (3.3*float(EBIT)/float(total_assets) + float(sales)/total_assets + 0.6*float(equity)/float(total_liabilities)
+            + 1.4*float(retained_earnings)/total_assets + 1.2*float(working_capital)/total_assets)
 
 
 

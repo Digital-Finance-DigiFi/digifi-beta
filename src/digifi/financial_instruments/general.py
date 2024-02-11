@@ -52,6 +52,7 @@ class FinancialInstrumentInterface(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def present_value(self) -> float:
         """
+        ## Description
         Calculate present value.
         """
         raise NotImplementedError
@@ -59,6 +60,7 @@ class FinancialInstrumentInterface(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def net_present_value(self) -> float:
         """
+        ## Description
         Calculate net present value.
         """
         raise NotImplementedError
@@ -66,6 +68,7 @@ class FinancialInstrumentInterface(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def future_value(self) -> float:
         """
+        ## Description
         Calculate future value.
         """
         raise NotImplementedError

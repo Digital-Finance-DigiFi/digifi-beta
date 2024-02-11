@@ -40,6 +40,10 @@ class PortfolioInstrumentStruct(DataClassValidation):
     """
     ## Description
     Struct with data to be used inside the InstumentsPortfolio.
+    ### Input:
+        - portfolio_price_array: Historical price series of the instrument
+        - portfolio_time_array: Array of time accompanying the price series
+        - portfolio_predictable_income: Array of preditable income readings (e.g., dividends for stocks, copouns for bonds, overnight fees, etc.)
     """
     portfolio_price_array: np.ndarray
     portfolio_time_array: np.ndarray

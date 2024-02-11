@@ -26,6 +26,10 @@ class CAPMParams(DataClassValidation):
     ## Description
     Parameters for the CAPM class.
     ### Input:
+        - capm_type: Type of CAPM model (i.e., STANDARD, THREE_FACTOR_FAMA_FRENCH, ot FIVE_FACTOR_FAMA_FRENCH)
+        - solution_type: Type of solution to use (i.e., COVARIANCE - works only for STANDARD CAPM model, or LINEAR_REGRESSION)
+        - market_returns: Returns of the market
+        - rf: Risk-free rate of return
         - SMB: difference in returns between a portfolio of "big" stocks and a portfolio of "small" stocks.
         - HML: difference in returns between a portfolio with "high" Book-to-Market ratio and a portfolio with "low" Book-to_market ratio.
         - RMW: difference in returns between a portfolio with "strong" profitability and a portfolio with "weak" profitability.
@@ -98,6 +102,8 @@ class CAPM:
     ## Description
     CAPM, three-factor and five-factor Famma-French models.\n
     Contains methods for finding asset beta and predicting expected asset returns with the given beta.
+    ### Input:
+        - capm_params: Parameters for defining a CAPM model instance
     """
     def __init__(self, capm_params: CAPMParams) -> None:
         self.capm_type = capm_params.capm_type
@@ -109,7 +115,11 @@ class CAPM:
         self.rmw = capm_params.rmw
         self.cma = capm_params.cma
     
-    def __validate_fama_french_params(self) -> None:
+    def __validate_params(self) -> None:
+        """
+        ## Description
+        Validation of paramers and their lengths.
+        """
         match self.capm_type:
             case CAPMType.STANDARD:
                 pass
@@ -127,11 +137,23 @@ class CAPM:
         """
         ## Description
         Computes the expected return of an asset/project given the risk-free rate, expected market return, SMB, HML, RMW, CMA and their betas.
+        ### Input:
+            - alpha: y-axis intersection of the CAPM model
+            - beta: Sensitivity of the asset with respect to premium market returns
+            - beta_s: Sensitivity of the asset with respect to SMB returns
+            - beta_h: Sensitivity of the asset with respect to HML returns
+            - beta_r: Sensitivity of the asset with respect to RMW returns
+            - beta_c: Sensitivity of the asset with respect to CMA returns
+        ### Output:
+            - Array of asset returns
         ### LaTeX Formula:
             - E[R_{A}] = R_{rf} + \\alpha + \\beta_{M}(E[R_{M}] - R_{rf}) + \\beta_{S}SMB + \\beta_{H}HML + \\beta_{R}RMW + \\beta_{C}CMA
+        ## Links:
+            - Wikipedia: https://en.wikipedia.org/wiki/Linear_regression
+            - Original Source: N/A
         """
         # Arguments validation
-        self.__validate_fama_french_params()
+        self.__validate_params()
         # Linear regression
         lin_reg = float(alpha) + float(beta)*(self.market_returns - self.rf)
         if self.capm_type!=CAPMType.STANDARD:
@@ -166,9 +188,18 @@ class CAPM:
         """
         ## Description
         Finds the values of parameters alpha and betas (if COVARIANCE solution type is used, only beta is returned).
+        ### Input:
+            - asset_returns: Array of asset returns
+        ### Output:
+            - alpha: y-axis intersection of the CAPM model
+            - beta: Sensitivity of the asset with respect to premium market returns
+            - beta_s: Sensitivity of the asset with respect to SMB returns
+            - beta_h: Sensitivity of the asset with respect to HML returns
+            - beta_r: Sensitivity of the asset with respect to RMW returns
+            - beta_c: Sensitivity of the asset with respect to CMA returns
         """
         # Arguments validation
-        self.__validate_fama_french_params()
+        self.__validate_params()
         compare_array_len(array_1=asset_returns, array_2=self.market_returns, array_1_name="asset_returns", array_2_name="market_returns")
         # Covariance solution
         if self.solution_type==CAPMSolutionType.COVARIANCE:
@@ -189,11 +220,11 @@ class CAPM:
                     def line(x, alpha, beta, beta_s, beta_h):
                         return self.__linear_regression_wrapper(x=x, alpha=alpha, beta=beta, beta_s=beta_s, beta_h=beta_h)
                     popt, _ = scipy.optimize.curve_fit(line, np.array(xdata), ydata)
-                    return {"alpha":popt[0], "beta":popt[1], "s_beta":popt[2], "h_beta":popt[3]}
+                    return {"alpha":popt[0], "beta":popt[1], "beta_s":popt[2], "beta_h":popt[3]}
                 case CAPMType.FIVE_FACTOR_FAMA_FRENCH:
                     xdata = [self.market_returns, self.rf, self.smb, self.hml, self.rmw, self.cma]
                     def line(x, alpha, beta, beta_s, beta_h, beta_r, beta_c):
                         return self.__linear_regression_wrapper(x=x, alpha=alpha, beta=beta, beta_s=beta_s, beta_h=beta_h, beta_r=beta_r, beta_c=beta_c)
                     popt, _ = scipy.optimize.curve_fit(line, np.array(xdata), ydata)
-                    return {"alpha":popt[0], "beta":popt[1], "s_beta":popt[2], "h_beta":popt[3], "r_beta":popt[4], "c_beta":popt[5]}
+                    return {"alpha":popt[0], "beta":popt[1], "beta_s":popt[2], "beta_h":popt[3], "beta_r":popt[4], "beta_c":popt[5]}
             
