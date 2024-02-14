@@ -45,6 +45,20 @@ class BernoulliDistribution(ProbabilityDistributionInterface):
             raise ValueError("The argument k must be in the \{0, 1\} set.")
         
     def pdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Mass Function (PMF) for a Bernoulli distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of values (0 or 1) at which to calculate the PMF.
+
+        ### Output:
+            - PMF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Bernoulli_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         result = []
         for k_ in k:
@@ -60,6 +74,19 @@ class BernoulliDistribution(ProbabilityDistributionInterface):
             return 1-self.p
     
     def cdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a Bernoulli distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of values (0 or 1) at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Bernoulli_distribution
+        """
         type_check(value=k, type_=np.ndarray, value_name="k")
         result = []
         for k_ in k:
@@ -67,15 +94,57 @@ class BernoulliDistribution(ProbabilityDistributionInterface):
         return np.array(result)
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Inverse Cumulative Distribution Function (Inverse CDF) for a Bernoulli distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Bernoulli_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return np.where(p==1.0, 1, 0)
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Moment Generating Function (MGF) for a Bernoulli distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Bernoulli_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return (1-self.p) + self.p*np.exp(t)
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Characteristic Function (CF) for a Bernoulli distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Bernoulli_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return (1-self.p) + self.p*np.exp(1j*t)
 
@@ -111,6 +180,20 @@ class BinomialDistribution(ProbabilityDistributionInterface):
         return n_choose_r(n=self.n, r=k)*(self.p**k)*((1-self.p)**(self.n-k))
     
     def pdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Mass Function (PMF) for a binomial distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of non-negative integer values at which to calculate the PMF.
+
+        ### Output:
+            - PMF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         result = []
         for k_ in k:
@@ -118,12 +201,40 @@ class BinomialDistribution(ProbabilityDistributionInterface):
         return np.array(result)
     
     def cdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a binomial distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of non-negative integer values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         a = self.n - np.floor(k)
         b = 1 + np.floor(k)
         return betainc(a, b, np.ones(len(k))*(1-self.p))
     
     def inverse_cdf(self, p: np.ndarray, x_0: float=0.5) -> np.ndarray:
+        """
+        ## Description
+        Computes the Inverse Cumulative Distribution Function (Inverse CDF) for a binomial distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_distribution
+        """
+
         x_0 = float(x_0)
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
@@ -139,10 +250,38 @@ class BinomialDistribution(ProbabilityDistributionInterface):
         return result
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Moment Generating Function (MGF) for a binomial distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return ((1-self.p) + self.p*np.exp(t))**self.n
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Characteristic Function (CF) for a binomial distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return ((1-self.p) + self.p*np.exp(1j*t))**self.n
 
@@ -173,22 +312,92 @@ class DiscreteUniformDistribution(ProbabilityDistributionInterface):
         self.entropy = np.log(self.n)
     
     def pdf(self, n_readings: int) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Mass Function (PMF) for a discrete uniform distribution.
+
+        ### Input:
+            - n_readings (int): Number of possible outcomes.
+
+        ### Output:
+            - PMF values (np.ndarray) for the discrete uniform distribution.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Discrete_uniform_distribution
+        """
+
         return np.ones(int(n_readings))/self.n
     
     def cdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a discrete uniform distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Discrete_uniform_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         return np.where((self.a<=k) & (k<=self.b), (np.floor(k)-self.a+1)/self.n, np.nan)
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Inverse Cumulative Distribution Function (Inverse CDF) for a discrete uniform distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Discrete_uniform_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return (p*self.n) - 1 + self.a
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Moment Generating Function (MGF) for a discrete uniform distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Discrete_uniform_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return (np.exp(self.a*t) - np.exp((self.b+1)*t))/(self.n*(1-np.exp(t)))
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Characteristic Function (CF) for a discrete uniform distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Discrete_uniform_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return (np.exp(1j*self.a*t) - np.exp(1j*(self.b+1)*t))/(self.n*(1-np.exp(1j*t)))
 
@@ -222,6 +431,20 @@ class PoissonDistribution(ProbabilityDistributionInterface):
         return ((self.lambda_**k)*np.exp(-self.lambda_))/factorial(n=k)
 
     def pdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Mass Function (PMF) for a Poisson distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of non-negative integer values at which to calculate the PMF.
+
+        ### Output:
+            - PMF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Poisson_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         result = []
         for k_ in k:
@@ -238,6 +461,20 @@ class PoissonDistribution(ProbabilityDistributionInterface):
         return np.exp(-self.lambda_)*result
     
     def cdf(self, k: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a Poisson distribution.
+
+        ### Input:
+            - k (np.ndarray): Array of non-negative integer values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given k.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Poisson_distribution
+        """
+
         type_check(value=k, type_=np.ndarray, value_name="k")
         result = []
         for k_ in k:
@@ -245,6 +482,23 @@ class PoissonDistribution(ProbabilityDistributionInterface):
         return np.array(result)
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Inverse Cumulative Distribution Function (Inverse CDF) for a Poisson distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the givenprobabilities.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Poisson_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         w = NormalDistribution(mu=0, sigma=1).inverse_cdf(p=p)
@@ -252,9 +506,37 @@ class PoissonDistribution(ProbabilityDistributionInterface):
                 + (-8/405 + 7*(w**2)/810 + (w**4)/270)/self.lambda_)
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Moment Generating Function (MGF) for a Poisson distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Poisson_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(self.lambda_*(np.exp(t)-1))
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Characteristic Function (CF) for a Poisson distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Poisson_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(self.lambda_*(np.exp(1j*t)-1))

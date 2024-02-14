@@ -10,6 +10,10 @@ class ContinuousUniformDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of continuous uniform distribution.\n
     Wikipedia: https://en.wikipedia.org/wiki/Continuous_uniform_distribution\n
+
+    ### Input:
+    - a (float): Lower bound of the distribution.
+    - b (float): Upper bound of the distribution.
     """
     def __init__(self, a: float, b: float) -> None:
         a = float(a)
@@ -30,23 +34,90 @@ class ContinuousUniformDistribution(ProbabilityDistributionInterface):
         self.entropy = np.log(b-a)
     
     def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Density Function (PDF) for a continuous uniform distribution.
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the PDF.
+
+        ### Output:
+            - PDF values (np.ndarray) at the given x.
+
+        ### Links:
+        -  https://en.wikipedia.org/wiki/Continuous_uniform_distribution#Probability_density_function
+        """
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.where((self.a<=x) and (x<=self.b), 1/(self.b-self.a), 0)
     
     def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a continuous uniform distribution.
+        
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given x.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Continuous_uniform_distribution#Cumulative_distribution_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.where((self.a<=x), np.minimum((x-self.a)/(self.b-self.a), 1), 0)
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Inverse Cumulative Distribution Function (Inverse CDF) for a continuous uniform distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+        """
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return self.a + p*(self.b-self.a)
-    
+
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Moment Generating Function (MGF) for a continuous uniform distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+        """
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.where(t!=0, (np.exp(t*self.b)-np.exp(t*self.b))/(t*(self.b-self.a)), 1)
-    
+
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Characteristic Function (CF) for a continuous uniform distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+        """
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.where(t!=0, (np.exp(1j*t*self.b)-np.exp(1j*t*self.b))/(1j*t*(self.b-self.a)), 1)
 
@@ -56,6 +127,10 @@ class NormalDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of normal distribution.\n
     Wikipedia: https://en.wikipedia.org/wiki/Normal_distribution\n
+
+    ### Input:
+    - mu (float): Mean of the distribution.
+    - sigma (float): Standard deviation of the distribution.
     """
     def __init__(self, mu: float, sigma: float) -> None:
         mu = float(mu)
@@ -74,23 +149,94 @@ class NormalDistribution(ProbabilityDistributionInterface):
         self.entropy = np.log(2*np.pi*np.e*(sigma**2))/2
     
     def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Density Function (PDF) of a normal distribution.
+        Wikipedia: https://en.wikipedia.org/wiki/Normal_distribution#Probability_density_function
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the PDF.
+
+        ### Output:
+            - PDF values (np.ndarray) at the given x.
+
+        ### Links: 
+            - https://en.wikipedia.org/wiki/Normal_distribution#Probability_density_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.exp(-((x-self.mu)/self.sigma)**2/2)/(self.sigma*np.sqrt(2*np.pi))
     
     def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a normal distribution.
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given x.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Normal_distribution#Cumulative_distribution_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return (1+erf((x-self.mu)/(self.sigma*np.sqrt(2))))/2
 
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Inverse Cumulative Distribution Function (Inverse CDF) for a normal distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Normal_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return self.mu + self.sigma*np.sqrt(2)*erfinv(2*p - 1)
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Moment Generating Function (MGF) for a normal distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Normal_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(self.mu*t + 0.5*(self.sigma**2)*(t**2))
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Characteristic Function (CF) for a normal distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Normal_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.exp(1j*self.mu*t + 0.5*(self.sigma**2)*(t**2))
 
@@ -100,6 +246,9 @@ class ExponentialDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of exponential distribution.\n
     Wikipedia: https://en.wikipedia.org/wiki/Exponential_distribution\n
+
+    ### Input:
+    - lambda_ (float): Rate parameter, the inverse of the mean.
     """
     def __init__(self, lambda_: float):
         lambda_ = float(lambda_)
@@ -118,23 +267,92 @@ class ExponentialDistribution(ProbabilityDistributionInterface):
         self.entropy = 1 - np.log(lambda_)
     
     def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Density Function (PDF) for an exponential distribution
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the PDF.
+
+        ### Output:
+            - PDF values (np.ndarray) at the given x.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Exponential_distribution#Probability_density_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return self.lambda_*np.exp(-self.lambda_*x)
     
     def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for an exponential distribution.
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given x.
+        
+        ### Links:
+            - https://en.wikipedia.org/wiki/Exponential_distribution#Cumulative_distribution_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return 1 - np.exp(-self.lambda_*x)
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Inverse Cumulative Distribution Function (Inverse CDF) for an exponential distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Exponential_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return -np.log(1-p) / self.lambda_
     
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Moment Generating Function (MGF) for an exponential distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Exponential_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.where(t<self.lambda_, self.lambda_/(self.lambda_-t), np.nan)
     
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Characteristic Function (CF) for an exponential distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Exponential_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return self.lambda_/(self.lambda_-1j*t)
 
@@ -144,6 +362,10 @@ class LaplaceDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of Laplace distribution.\n
     Wikipedia: https://en.wikipedia.org/wiki/Laplace_distribution\n
+
+    ### Input:
+    - mu (float): Location parameter, which is the peak of the distribution.
+    - b (float): Scale parameter, which controls the spread of the distribution.
     """
     def __init__(self, mu: float, b: float) -> None:
         mu = float(mu)
@@ -162,22 +384,92 @@ class LaplaceDistribution(ProbabilityDistributionInterface):
         self.entropy = np.log(2*b*np.e)
     
     def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Probability Density Function (PDF) for a Laplace distribution.
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the PDF.
+
+        ### Output:
+            - PDF values (np.ndarray) at the given x.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Laplace_distribution#Probability_density_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.exp(np.abs(x-self.mu)/self.b)/(2*self.b)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Cumulative Distribution Function (CDF) for a Laplace distribution.
+
+        ### Input:
+            - x (np.ndarray): Values at which to calculate the CDF.
+
+        ### Output:
+            - CDF values (np.ndarray) at the given x.
+        
+        ### Links:
+            - https://en.wikipedia.org/wiki/Laplace_distribution#Cumulative_distribution_function
+        """
+
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.where(x<=self.mu, 0.5*np.exp((x-self.mu)/self.b), 1-0.5*np.exp(-(x-self.mu)/self.b))
     
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Inverse Cumulative Distribution Function (Inverse CDF) for a Laplace distribution.
+
+        ### Input:
+            - p (np.ndarray): Probability values for which to calculate the inverse CDF.
+
+        ### Output:
+            - Inverse CDF values (np.ndarray) for the given probabilities.
+
+        ### Links      ```
+            - https://en.wikipedia.org/wiki/Laplace_distribution
+        """
+
         type_check(value=p, type_=np.ndarray, value_name="p")
         p = np.where((p<0) | (1<p), np.nan, p)
         return self.mu - self.b*np.sign(p-0.5)*np.log(1-2*np.abs(p-0.5))
 
     def mgf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Calculates the Moment Generating Function (MGF) for a Laplace distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the MGF.
+
+        ### Output:
+            - MGF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Laplace_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.where(np.abs(t)<1/self.b, np.exp(self.mu*t)/(1-(self.b**2)*(t**2)), np.nan)
 
     def cf(self, t: np.ndarray) -> np.ndarray:
+        """
+        ## Description
+        Computes the Characteristic Function (CF) for a Laplace distribution.
+
+        ### Input:
+            - t (np.ndarray): Input values for the CF.
+
+        ### Output:
+            - CF values (np.ndarray) at the given t.
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Laplace_distribution
+        """
+
         type_check(value=t, type_=np.ndarray, value_name="t")
         return np.where(np.abs(t)<1/self.b, (np.exp(self.mu*1j*t))/(1-(self.b**2)*(t**2)), np.nan)
