@@ -9,9 +9,21 @@ from src.digifi.financial_instruments.derivatives_utils import (CustomPayoff, Lo
 
 def binomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -> List[np.ndarray]:
     """
-    ## Description
     Binomial tree with the defined parameters presented as an array of layers.
+
+    ### Input:
+        - start_point (float): Starting value.
+        - u (float): Upward movement factor, must be positive.
+        - d (float): Downward movement factor, must be positive.
+        - n_steps (int): Number of steps in the tree.
+
+    ### Output:
+        - List of layers (numpy.ndarrays) with node values at each step.
+
+    ### Exceptions:
+        - ValueError if 'u' or 'd' is non-positive.
     """
+
     start_point = float(start_point)
     u = float(u)
     d = float(d)
@@ -33,9 +45,27 @@ def binomial_model(payoff: Type[CustomPayoff], start_point: float, u: float, d: 
                    payoff_timesteps: Union[List[bool], None]=None) -> float:
     """
     ## Description
-    General binomial model with custom payoff.\n
-    The function assumes that there is a payoff at the final time step.\n
+    General binomial model with custom payoff.
+    The function assumes that there is a payoff at the final time step.
     This function does not discount future cashflows.
+
+    ### Input Extensions:
+        - payoff (Type[CustomPayoff]): Custom payoff object defining the payoff at each node.
+        - p_u (float): Probability of an upward movement, must be in [0,1].
+        - payoff_timesteps (Union[List[bool], None]): A list indicating whether there's a payoff at each timestep. Defaults to payoff at every step if None.
+
+    ### Output:
+        - The fair value (float) calculated by the binomial model.
+
+    ### Additional Exceptions:
+        - ValueError if 'p_u' is not in [0,1].
+        - ValueError if 'payoff_timesteps' length does not match 'n_steps'.
+        - TypeError if 'payoff_timesteps' is not a list of boolean values.
+
+    ### Implementation Details:
+        - Constructs a binomial tree with given parameters.
+        - Calculates the value at each node considering the custom payoff and probability.
+        - Aggregates these values to determine the final fair value of the option.
     """
     payoff = validate_custom_payoff(custom_payoff=payoff)
     start_point = float(start_point)
@@ -84,7 +114,31 @@ def binomial_model(payoff: Type[CustomPayoff], start_point: float, u: float, d: 
 class BrownianMotionBinomialModel(LatticeModelInterface):
     """
     ## Description
-    Binomial models that are scaled to emulate Brownian motion.
+    Binomial models that are scaled to emulate Brownian motion. This model uses a binomial lattice
+    approach to approximate the continuous path of Brownian motion, specifically for option pricing.
+    This technique is rooted in the Cox-Ross-Rubinstein (CRR) model, adapting it to mirror the properties of Brownian motion.
+
+    ### Parameters:
+        - s_0 (float): Initial stock price.
+        - k (float): Strike price.
+        - T (float): Time to maturity (in years).
+        - r (float): Risk-free interest rate (annual).
+        - sigma (float): Volatility of the underlying asset.
+        - q (float): Dividend yield.
+        - n_steps (int): Number of steps in the binomial model.
+        - payoff_type (LatticeModelPayoffType): Type of the option payoff (e.g., long call, long put).
+        - custom_payoff (Union[Type[CustomPayoff], None]): Custom payoff function, if applicable.
+
+    ### Implementation Details:
+        - The model calculates the up (u) and down (d) factors using the volatility and time step (dt), ensuring the binomial model aligns with the log-normal distribution of stock prices in the Black-Scholes model.
+        - Depending on the payoff type, it sets the appropriate payoff function.
+        - For more detailed theory, refer to the Cox-Ross-Rubinstein model and its alignment with the Black-Scholes model in financial literature.
+
+    ### Exceptions:
+        - ValueError if the `custom_payoff` is required but not provided or is invalid.
+    
+    ### Links:
+        - https://en.wikipedia.org/wiki/Brownian_model_of_financial_markets
     """
     def __init__(self, s_0: float, k: float, T: float, r: float, sigma: float, q: float, n_steps: int,
                  payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.LONG_CALL,
@@ -123,6 +177,9 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         """
         ## Description
         Binomial model that computes the payoffs for each path and computes the weighted average of paths based on probability.
+        
+        ### Output:
+            - The present value of the European option (float).
         """
         p = (np.exp((self.r-self.q)*self.dt) - self.d)/(self.u-self.d)
         value = 0
@@ -136,6 +193,9 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         """
         ## Description
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
+
+        ### Output:
+            - The present value of the American option (float).
         """
         payoff_timesteps = []
         for _ in range(self.n_steps):
@@ -146,6 +206,16 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         """
         ## Description
         Binomial model that computes the payoffs for each node in the binomial tree to determine the initial payoff value.
+
+        ### Input:
+            - payoff_timesteps (Union[List[bool], None]): Indicators for exercise opportunity at each timestep.
+
+        ### Output:
+            - The present value of the Bermudan option (float).
+
+        ### Exceptions:
+            - ValueError if 'payoff_timesteps' length does not match 'n_steps'.
+            - TypeError if 'payoff_timesteps' is not a list of boolean values.
         """
         if isinstance(payoff_timesteps, type(None)):
             payoff_timesteps = []
