@@ -10,6 +10,16 @@ def trinomial_tree_nodes(start_point: float, u: float, d: float, n_steps: int) -
     """
     ## Description
     Trinomial tree with the defined parameters presented as an array of layers.
+
+    ### Input:
+    - start_point (float): Initial value of the underlying asset.
+    - u (float): Upward movement factor.
+    - d (float): Downward movement factor.
+    - n_steps (int): Number of time steps in the tree.
+
+    ### Output:
+    - A list of numpy.ndarrays representing each layer of the trinomial tree.
+
     """
     start_point = float(start_point)
     u = float(u)
@@ -37,6 +47,19 @@ def trinomial_model(payoff: Type[CustomPayoff], start_point: float, u: float, d:
     General trinomial model with custom payoff.\n
     The function assumes that there is a payoff at the final time step.\n
     This function does not discount future cashflows.
+
+    ### Input:
+    - payoff (Type[CustomPayoff]): Custom payoff class instance.
+    - start_point (float): Initial underlying asset value.
+    - u (float): Upward movement factor.
+    - d (float): Downward movement factor.
+    - p_u (float): Probability of an upward movement.
+    - p_d (float): Probability of a downward movement.
+    - n_steps (int): Number of steps in the model.
+    - payoff_timesteps (Union[List[bool], None]): List of booleans indicating if there's a payoff at each step.
+
+    ### Output:
+    - Fair value of the option (float)
     """
     # Arguments validation
     payoff = validate_custom_payoff(custom_payoff=payoff)
@@ -88,6 +111,18 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
     """
     ## Description
     Trinomial models that are scaled to emulate Brownian motion.
+
+    ### Input:
+    - s_0 (float): Initial stock price.
+    - k (float): Strike price.
+    - T (float): Time to maturity.
+    - r (float): Risk-free interest rate.
+    - sigma (float): Volatility of the underlying asset.
+    - q (float): Dividend yield.
+    - n_steps (int): Number of steps in the trinomial tree.
+    - payoff_type (LatticeModelPayoffType): Type of payoff (e.g., long call, long put).
+    - custom_payoff (Union[Type[CustomPayoff], None]): Custom payoff function.
+
     """
     def __init__(self, s_0: float, k: float, T: float, r: float, sigma: float, q: float, n_steps: int,
                  payoff_type: LatticeModelPayoffType=LatticeModelPayoffType.LONG_CALL,
@@ -130,6 +165,9 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
         """
         ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
+
+        ### Output:
+            - Fair value of the European option (float).
         """
         payoff_timesteps = []
         for _ in range(self.n_steps):
@@ -141,6 +179,9 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
         """
         ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
+
+        ### Output:
+            - Fair value of the American option (float).
         """
         payoff_timesteps = []
         for _ in range(self.n_steps):
@@ -152,6 +193,9 @@ class BrownianMotionTrinomialModel(LatticeModelInterface):
         """
         ## Description
         Trinomial model that computes the payoffs for each node in the trinomial tree to determine the initial payoff value.
+
+        ### Output:
+            - Fair value of the Bermudan option (float).
         """
         return np.exp(-self.r*self.T)*trinomial_model(payoff=self.payoff, start_point=self.s_0, u=self.u, d=self.d, p_u=self.p_u, p_d=self.p_d,
                                                       n_steps=self.n_steps, payoff_timesteps=payoff_timesteps)

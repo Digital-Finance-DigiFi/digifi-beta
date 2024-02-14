@@ -180,6 +180,9 @@ class BrownianMotionBinomialModel(LatticeModelInterface):
         
         ### Output:
             - The present value of the European option (float).
+
+        ### Links:
+            - https://en.wikipedia.org/wiki/Binomial_options_pricing_model
         """
         p = (np.exp((self.r-self.q)*self.dt) - self.d)/(self.u-self.d)
         value = 0
