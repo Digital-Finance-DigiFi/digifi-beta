@@ -77,7 +77,7 @@ class CustomError(metaclass=abc.ABCMeta):
 class DifferenceStationary:
     """
     Difference stationary term for a discrte-time stochastic process.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Unit_root\n
+    Wikipedia: https://en.wikipedia.org/wiki/Unit_root \n
     """
     def __init__(self, n_paths: int, autoregression_parameters: np.ndarray) -> None:
         type_check(value=autoregression_parameters, type_=np.ndarray, value_name="autoregression_parameters")

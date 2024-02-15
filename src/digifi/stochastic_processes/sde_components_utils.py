@@ -52,28 +52,62 @@ class SDEComponentFunction:
     @staticmethod
     def linear(a: float, n_paths: int) -> np.ndarray:
         """
-        Returns:
-            a\n
-        e.g., Arithmetic Brownian Motion Drift - \\mu
+        ## Description
+        Generates a constant array representing a linear SDE component.
+
+        ### Input:
+            - a (float): Constant linear coefficient.
+            - n_paths (int): Number of simulation paths.
+
+        ### Output:
+            - Array (np.ndarray) representing the linear SDE component for each simulation path.
+
+        ### LaTeX Formula:
+            - f(t) = a where a is a constant.
         """
+
         return float(a) * np.ones(int(n_paths))
     
     @staticmethod
     def quadratic_time(t: float, a: float, b: float, n_paths: int) -> np.ndarray:
         """
-        Returns:
-            2*a*t + b\n
-        e.g., (2\\mu*t + b)
+        ## Description
+        Generates an array representing a quadratic time-dependent SDE component.
+
+        ### Input:
+            - t (float): Current time step.
+            - a (float): Coefficient for the time-dependent term.
+            - b (float): Constant term.
+            - n_paths (int): Number of simulation paths.
+
+        ### Output:
+            - Array (np.ndarray) representing the quadratic time-dependent SDE component for each simulation path.
+
+        ### LaTeX Formula:
+            - f(t) = 2at + b
         """
+
         return (2*float(a)*float(t) + float(b)) * np.ones(int(n_paths))
     
     @staticmethod
     def power_stochastic(stochastic_values: np.ndarray, a: float, power: float, n_paths: int) -> np.ndarray:
         """
-        Returns:
-            a * stochastic_values^{power}\n
-        e.g., Feller Square Root Process Diffusion - \\sigma*\\sqrt{S_{t}}
+        ## Description
+        Generates an array representing a power-law stochastic SDE component.
+
+        ### Input:
+            - stochastic_values (np.ndarray): Array of stochastic process values.
+            - a (float): Scaling coefficient.
+            - power (float): Power-law exponent.
+            - n_paths (int): Number of simulation paths.
+
+        ### Output:
+            - Array (np.ndarray) representing the power-law stochastic SDE component for each simulation path.
+
+        ### LaTeX Formula:
+            - f(X_t) = a \cdot X_t^{power} where X_t represents the stochastic process values.
         """
+
         type_check(value=stochastic_values, type_=np.ndarray, value_name="stochastic_values")
         if len(stochastic_values)!=int(n_paths):
             raise ValueError("The argument stochastic_values needs to be of the length {} as defined by n_paths.".format(n_paths))
@@ -120,8 +154,19 @@ class CustomSDEComponentFunction(metaclass=abc.ABCMeta):
 def validate_custom_sde_component_function(custom_component: Type[CustomSDEComponentFunction],
                                                   n_paths: int, dt: float) -> Type[CustomSDEComponentFunction]:
     """
-    Validate custom SDE component function object to satisfy the computational requirements.
+    ## Description
+    Validates a custom SDE component function ensuring it meets computational requirements.
+
+    ### Input:
+        - custom_component (Type[CustomSDEComponentFunction]): Custom component function object.
+        - n_paths (int): Number of simulation paths.
+        - dt (float): Time step increment.
+
+    ### Output:
+        - The validated custom component function object.
     """
+
+
     n_paths = int(n_paths)
     dt = float(dt)
     # Check that comp_func takes in parameters stochastic_values, t, n_paths and dt
@@ -139,8 +184,29 @@ def get_component_values(component_type: SDEComponentFunctionType, component_par
                          stochastic_values: np.ndarray, t: float, n_paths: int, dt: float,
                          custom_component_function: Type[CustomSDEComponentFunction]) -> np.ndarray:
     """
-    Get an array of computed SDE component values for a given component type.
+    ## Description
+    Computes SDE component values for a given component type using the specified parameters and stochastic values.
+
+    ### Input:
+        - component_type (SDEComponentFunctionType): Type of the SDE component.
+        - component_params (SDEComponentFunctionParams): Parameters for the SDE component.
+        - stochastic_values (np.ndarray): Stochastic process values.
+        - t (float): Current time step.
+        - n_paths (int): Number of simulation paths.
+        - dt (float): Time step increment.
+        - custom_component_function (Type[CustomSDEComponentFunction]): Custom SDE component function (if applicable).
+
+    ### Output:
+        - Array (np.ndarray) of computed SDE component values.
+
+    ### LaTeX Formula:
+        - Specific to the chosen SDE component type.
+
+    ## Links
+        - Wikipedia: N/A
+        - Original Source: N/A
     """
+
     # Arguments validation
     type_check(value=component_type, type_=SDEComponentFunctionType, value_name="component_type")
     type_check(value=component_params, type_=SDEComponentFunctionParams, value_name="component_params")

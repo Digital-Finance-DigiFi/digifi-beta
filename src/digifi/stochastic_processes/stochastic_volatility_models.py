@@ -27,8 +27,24 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Constant Elasticity of Variance Process.
+        ## Description
+        Generates simulation paths for the Constant Elasticity of Variance (CEV) process.
+
+        ### Input:
+            - None specific to this method.
+
+        ### Output:
+            - An array of simulated paths (np.ndarray) following the CEV process.
+
+        ### LaTeX Formula:
+            - dS_{t} = \mu S_{t} dt + \sigma S_{t}^{(\beta + 1)} dW_{t}
+            - Where \mu is the drift rate, \sigma is the volatility, \beta is the elasticity parameter, and dW_{t} is the Wiener process increment.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Constant_elasticity_of_variance_model
+            - Original Source: https://doi.org/10.3905/jpm.1996.015
         """
+
         # Stochastic process
         dW = np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.s_0*np.ones((1, self.n_paths)), np.zeros((self.n_steps, self.n_paths))), axis=0) 
@@ -39,8 +55,24 @@ class ConstantElasticityOfVariance(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected paths, E[S], of the Constant Elasticity of Variance Process.
+        ## Description
+        Calculates the expected path of the CEV process.
+
+        ### Input:
+            - None specific to this method.
+
+        ### Output:
+            - Expected value of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = S_0 e^{\mu t}
+            - Where S_0 is the initial stock price and \mu is the drift rate.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Constant_elasticity_of_variance_model
+            - Original Source: https://doi.org/10.3905/jpm.1996.015
         """
+
         return self.s_0*np.exp(self.mu*self.t)
 
 
@@ -73,8 +105,25 @@ class HestonStochasticVolatility(StochasticProcessInterface):
     
     def get_paths(self) -> Tuple[np.ndarray[Any, np.ndarray], np.ndarray[Any, np.ndarray]]:
         """
-        Paths, S, of the Heston Stochastic Volatility Process.
+        ## Description
+        Generates simulation paths for the Heston Stochastic Volatility process.
+
+        ### Input:
+            - None specific to this method.
+
+        ### Output:
+            - A tuple of arrays (np.ndarray) representing the simulated paths of stock prices and volatilities.
+
+        ### LaTeX Formula:
+            - dS_{t} = \mu S_{t} dt + \sqrt{v_{t}} S_{t} dW^{S}_{t}
+            - dv_{t} = k (\theta - v_{t}) dt + \epsilon \sqrt{v_{t}} dW^{v}_{t}
+            - Where \mu is the drift rate, v_{t} is the volatility, k is the rate of mean reversion, \theta is the long-term volatility mean, \epsilon is the volatility of volatility, and \rho is the correlation between the two Wiener processes dW^{S}_{t} and dW^{v}_{t}.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Heston_model
+            - Original Source: https://doi.org/10.1093%2Frfs%2F6.2.327
         """
+
         Nv = np.random.randn(self.n_steps, self.n_paths)
         N = np.random.randn(self.n_steps, self.n_paths)
         NS = self.rho*Nv + np.sqrt(1-self.rho**2)*N
@@ -94,8 +143,24 @@ class HestonStochasticVolatility(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected paths, E[S], of the Heston Stochastic Volatility Process.
+        ## Description
+        Calculates the expected path of the Heston Stochastic Volatility process.
+
+        ### Input:
+            - None specific to this method.
+
+        ### Output:
+            - Expected value of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = S_0 + (\mu - \frac{1}{2} \theta) t + \frac{\theta - v_0}{2k} (1 - e^{-kt})
+            - Where S_0 is the initial stock price, v_0 is the initial variance, and other parameters are as previously defined.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Heston_model
+            - Original Source: https://doi.org/10.1093%2Frfs%2F6.2.327
         """
+
         return (self.s_0 + (self.mu-0.5*self.theta)*self.t
                 + (self.theta-self.v_0)*(1-np.exp(-self.k*self.t))/(2*self.k))
 
@@ -124,8 +189,21 @@ class VarianceGammaProcess(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Variance Gamma Process.
+        ## Description
+        Generates simulation paths for the Variance Gamma process.
+
+        ### Output:
+            - An array of simulated paths (np.ndarray) following the Variance Gamma process.
+
+        ### LaTeX Formula:
+            - dS_{t} = \mu dG(t) + \sigma \sqrt{dG(t)} \mathcal{N}(0,1)
+            - Where \mu is the drift rate, \sigma is the volatility, and dG(t) is the increment of a Gamma process.
+
+        ##Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Variance_gamma_process
+            - Original Source: https://doi.org/10.1086%2F296519
         """
+
         # Stochastic process
         dG = np.random.gamma(self.dt/self.kappa, self.kappa, (self.n_steps, self.n_paths))
         dS = self.mu*dG + self.sigma*np.random.randn(self.n_steps, self.n_paths)*np.sqrt(dG)
@@ -135,12 +213,41 @@ class VarianceGammaProcess(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Variance Gamma Process.
+        ## Description
+        Calculates the expected path of the Variance Gamma process.
+
+        ### Output:
+            - Expected value of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = S_0 + \mu t
+            - Where S_0 is the initial stock price and \mu is the drift rate.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Variance_gamma_process
+            - Original Source: https://doi.org/10.1086%2F296519
         """
+
         return self.mu*self.t + self.s_0 
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Variance Gamma Process.
+        ## Description
+        Calculates the variance of the Variance Gamma process.
+
+        ### Input:
+            - None specific to this method.
+
+        ### Output:
+            - Variance of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - Var[S_t] = (\sigma^2 + \frac{\mu^2}{\text{rate}}) t
+            - Where \sigma is the volatility and rate is the rate of the Gamma process.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Variance_gamma_process
+            - Original Source: https://doi.org/10.1086%2F296519
         """
+
         return (self.sigma**2 + (self.mu**2)/self.rate)*self.t

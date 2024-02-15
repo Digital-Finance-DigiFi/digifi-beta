@@ -29,7 +29,11 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Merton Jump-Diffusion Process.
+        ## Description
+        Generates simulation paths for the Merton Jump-Diffusion process.
+
+        ### Output:
+            - Array of simulated paths following the Merton Jump-Diffusion process.
         """
         # Stochastic process
         dX = (self.mu_s-0.5*self.sigma_s**2)*self.dt + self.sigma_s*np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
@@ -43,13 +47,21 @@ class MertonJumpDiffusionProcess(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Merton Jump-Diffusion Process.
+        ## Description
+        Calculates the expected path of the Merton Jump-Diffusion process.
+
+        ### Output:
+            - Expected value of the stock price at each time step.
         """
         return (self.mu_s+self.lambda_j*self.mu_j)*self.t+self.s_0
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Merton Jump-Diffusion Process.
+        ## Description
+        Calculates the variance of the Merton Jump-Diffusion process.
+
+        ### Output:
+            - Variance of the stock price at each time step.
         """
         return (self.mu_s**2+self.lambda_j*(self.mu_j**2+self.sigma_j**2))*self.t
 
@@ -84,7 +96,11 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Kou Jump-Diffusion Process.
+        ## Description
+        Generates simulation paths for the Kou Jump-Diffusion process.
+
+        ### Output:
+            - Array of simulated paths following the Kou Jump-Diffusion process.
         """
         # Stochstic process
         dX = (self.mu-0.5*self.sigma**2)*self.dt + self.sigma*np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
@@ -106,12 +122,20 @@ class KouJumpDiffusionProcess(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Kou Jump-Diffusion Process.
+        ## Description
+        Calculates the expected path of the Kou Jump-Diffusion process.
+
+        ### Output:
+            - Expected value of the stock price at each time step.
         """
         return (self.mu + self.lambda_n*(self.p/self.eta_1-(1-self.p)/self.eta_2))*self.t + self.s_0
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Kou Jump-Diffusion Process.
+        ## Description
+        Calculates the variance of the Kou Jump-Diffusion process.
+
+        ### Output:
+            - Variance of the stock price at each time step.
         """
         return (self.sigma**2 + 2*self.lambda_n*(self.p/(self.eta_1**2)+(1-self.p)/(self.eta_2**2)))*self.t
