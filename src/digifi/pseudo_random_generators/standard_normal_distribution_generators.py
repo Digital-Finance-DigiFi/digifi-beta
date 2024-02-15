@@ -9,8 +9,24 @@ from src.digifi.probability_distributions.continuous_probability_distributions i
 
 class StandardNormalAcceptRejectPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
     """
+    ## Description
     Pseudo-random number generator for standard normal distribution.
     It samples the Laplace distribution to generate the standard normal distribution (i.e., exponential tilting).
+
+    ### Input:
+    - sample_size (int): The size of the sample to generate.
+    - lap_p (float): Probability parameter for the Laplace distribution.
+    - seed_1 (int): Seed for the first random number generator.
+    - seed_2 (int): Seed for the second random number generator.
+
+    ### Output:
+        - Array of pseudo-random numbers following a standard normal distribution.
+
+    ### Formula:
+        - Accept if \( U \cdot M \cdot g(Y) \leq f(Y) \), where \( f \) is the target PDF (normal), \( g \) is the proposal PDF (Laplace), \( U \) is uniform random, \( Y \) is from \( g \), and \( M \) is a constant.
+
+    ### Links:
+        - https://en.wikipedia.org/wiki/Rejection_sampling
     """
     def __init__(self, sample_size: int=10_000, lap_p: float=0.5, seed_1: int=78_321, seed_2: int=32_456) -> None:
         self.sample_size = int(sample_size)
@@ -37,8 +53,22 @@ class StandardNormalAcceptRejectPseudoRandomNumberGenerator(PseudoRandomGenerato
 
 class StandardNormalInverseTransformMethodPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
     """
+    ## Description
     Pseudo-random number generator for standard normal distribution.
     It returns the array of values from sampling an inverse CDF.
+
+    ### Input:
+        - sample_size (int): Number of random samples to generate.
+        - seed (int): Seed for the pseudo-random number generator.
+
+    ### Output:
+        - Array of pseudo-random numbers following a standard normal distribution.
+
+    ### Formula:
+        - \( X = F^{-1}(U) \), where \( F^{-1} \) is the inverse CDF of the normal distribution and \( U \) is a uniform random variable.
+
+    ### Links:
+        - https://en.wikipedia.org/wiki/Inverse_transform_sampling
     """
     def __init__(self, sample_size: int=10_000, seed: int=78_321) -> None:
         self.sample_size = int(sample_size)
@@ -55,8 +85,25 @@ class StandardNormalInverseTransformMethodPseudoRandomNumberGenerator(PseudoRand
 
 class StandardNormalBoxMullerAlgorithmPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
     """
+    ## Description
     Pseudo-random number generator for standard normal distribution.
     It returns two independent pseudo-random arrays.
+
+    ### Input:
+    - sample_size (int): Number of random samples to generate.
+    - seed_1 (int): Seed for the first uniform random number generator.
+    - seed_2 (int): Seed for the second uniform random number generator.
+
+    ### Output:
+        - Two arrays of pseudo-random numbers following a standard normal distribution.
+
+    ### Formula:
+        - \( Z_0 = \sqrt{-2 \ln U_1} \cos(2\pi U_2) \)
+        - \( Z_1 = \sqrt{-2 \ln U_1} \sin(2\pi U_2) \)
+        - \( U_1, U_2 \) are independent uniform random variables.
+
+    ### Links:
+        - https://en.wikipedia.org/wiki/Box–Muller_transform
     """
     def __init__(self, sample_size: int=10_000, seed_1: int=78_321, seed_2: int=32_456) -> None:
         self.sample_size = int(sample_size)
@@ -76,8 +123,25 @@ class StandardNormalBoxMullerAlgorithmPseudoRandomNumberGenerator(PseudoRandomGe
 
 class StandardNormalMarsagliaMethodPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
     """
+    ## Description
     Pseudo-random number generator for standard normal distribution.
     It returns two independent pseudo-random arrays.
+
+    ### Input:
+    - sample_size (int): Number of random samples to generate.
+    - max_iterations (int): Maximum number of iterations for the algorithm.
+    - seed_1 (int): Seed for the first uniform random number generator.
+    - seed_2 (int): Seed for the second uniform random number generator.
+
+    ### Output:
+        - Two arrays of pseudo-random numbers following a standard normal distribution.
+
+    ### Formula:
+        - \( S = W_1^2 + W_2^2 \)
+        - If \( S < 1 \), then \( Z_0 = W_1 \sqrt{-2 \ln S / S} \), \( Z_1 = W_2 \sqrt{-2 \ln S / S} \)
+
+    ### Links:
+        - https://en.wikipedia.org/wiki/Marsaglia_polar_method
     """
     def __init__(self, sample_size: int=10_000, max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=32_456) -> None:
         self.sample_size = int(sample_size)
@@ -102,7 +166,32 @@ class StandardNormalMarsagliaMethodPseudoRandomNumberGenerator(PseudoRandomGener
 
 class StandardNormalZigguratAlgorithmPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
     """
+    ## Description
     Pseudo-random number generator for standard normal distribution.
+
+    ### Input:
+    - sample_size (int): Number of random samples to generate.
+    - regions (int): Number of regions for the Ziggurat method.
+    - max_iterations (int): Maximum number of iterations for the algorithm.
+    - seed_1 (int): Seed for the first uniform random number generator.
+    - seed_2 (int): Seed for the second uniform random number generator.
+
+    ### Output:
+        - Array of pseudo-random numbers following a standardnormal distribution.
+
+    ### Input:
+        - dx (float, optional): The step size for the initial guess values. Default is 0.001.
+        - limit (int, optional): The limit for the x-axis in the normal distribution. Default is 6.
+
+    ### Output:
+        - Array of pseudo-random numbers following a standard normal distribution.
+
+    ### Formula:
+        - The Ziggurat algorithm divides the area under the PDF into several layers and segments for efficient sampling.
+        - Specific mathematical description of the algorithm involves conditional sampling and rejection based on the computed area.
+
+    ### Links:
+        - https://en.wikipedia.org/wiki/Ziggurat_algorithm
     """
     def __init__(self, sample_size: int=10_000, regions: int=256, max_iterations: int=1_000, seed_1: int=78_321, seed_2: int=32_456) -> None:
         self.sample_size = int(sample_size)

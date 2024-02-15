@@ -80,6 +80,7 @@ class FibonacciPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
         """
         ## Description
         Array of pseudo-random generated numbers based on Fibonacci Generator.
+        
         ### Output:
             - Array pseudo-random numberss following Uniform distribution
         """

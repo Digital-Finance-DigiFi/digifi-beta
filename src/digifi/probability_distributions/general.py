@@ -63,9 +63,22 @@ class ProbabilityDistributionInterface(metaclass=abc.ABCMeta):
 
 def skewness(array: np.ndarray) -> float:
     """
-    Skewness = \\frac{E[(X-\mu)^{3}]}{(E[(X-\mu)^{2}])^{\\frac{3}{2}}}.
-    Fisher-Pearson moment coefficient of skewness.
+    ## Description
+    Calculates the skewness of a given data array. Skewness measures the asymmetry of the probability distribution of a real-valued random variable about its mean. The skewness value can be positive, zero, negative, or undefined. Fisher-Pearson coefficient of skewness is used.
+
+    ### Input:
+        - array (np.ndarray): A numpy array for which the skewness is to be calculated.
+
+    ### Output:
+        - Skewness value (float) of the given data.
+
+    ### Formula:
+        - Skewness = \\frac{E[(X-\mu)^{3}]}{(E[(X-\mu)^{2}])^{\\frac{3}{2}}}, where X is the random variable, \mu is the mean of X, and E is the expectation operator.
+
+    ### Links:
+        - For more on skewness: https://en.wikipedia.org/wiki/Skewness
     """
+
     type_check(value=array, type_=np.ndarray, value_name="array")
     difference = array - np.mean(array)
     return np.mean(difference**3)/(np.mean(difference**2)**(3/2))
@@ -74,8 +87,22 @@ def skewness(array: np.ndarray) -> float:
 
 def kurtosis(array: np.ndarray) -> float:
     """
-    Kurtosis = \\frac{E[(X-\mu)^{4}]}{(E[(X-\mu)^{2}])^{2}}.
+    ## Description
+    Computes the kurtosis of a given data array. Kurtosis is a measure of the "tailedness" of the probability distribution of a real-valued random variable. Higher kurtosis implies a heavier tail. The calculation here does not subtract 3, hence this is the 'excess kurtosis'.
+
+    ### Input:
+        - array (np.ndarray): A numpy array for which the kurtosis is to be calculated.
+
+    ### Output:
+        - Kurtosis value (float) of the given data.
+
+    ### Formula:
+        - Kurtosis = \\frac{E[(X-\mu)^{4}]}{(E[(X-\mu)^{2}])^{2}}, where X is the random variable, \mu is the mean of X, and E is the expectation operator.
+
+    ### Links:
+        - For more on kurtosis: https://en.wikipedia.org/wiki/Kurtosis
     """
+
     type_check(value=array, type_=np.ndarray, value_name="array")
     difference = array - np.mean(array)
     return np.mean(difference**2)/(np.mean(difference**2)**2)
