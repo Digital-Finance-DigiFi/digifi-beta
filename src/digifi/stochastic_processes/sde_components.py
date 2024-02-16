@@ -158,9 +158,6 @@ class Diffusion:
         ### Output:
             - An array (np.ndarray) of Wiener process increments.
 
-        ### LaTeX Formula:
-            - dW_t \approx \sqrt{dt} \cdot \mathcal{N}(0, 1) where dt is the time step increment.
-
         ## Links
             - Wikipedia: https://en.wikipedia.org/wiki/Wiener_process
         """

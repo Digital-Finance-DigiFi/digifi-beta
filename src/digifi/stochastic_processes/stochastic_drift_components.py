@@ -76,9 +76,16 @@ class CustomError(metaclass=abc.ABCMeta):
 
 class DifferenceStationary:
     """
-    Difference stationary term for a discrte-time stochastic process.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Unit_root \n
+    ## Description
+    The Difference Stationary class represents a difference stationary term for a discrete-time stochastic process. This term is crucial in processes characterized by a unit root, where shocks have a permanent effect on the level of the series.
+
+    ### Methods:
+    - get_autoregression
+
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Unit_root
     """
+
     def __init__(self, n_paths: int, autoregression_parameters: np.ndarray) -> None:
         type_check(value=autoregression_parameters, type_=np.ndarray, value_name="autoregression_parameters")
         self.n_paths = int(n_paths)
@@ -86,8 +93,20 @@ class DifferenceStationary:
     
     def get_autoregression(self, previous_values: list[np.ndarray], t: float) -> np.ndarray:
         """
-        Get an array of autoregression values.
+        ## Description
+        Calculates autoregression values for the difference stationary process. This method considers previous values of the process and applies the autoregression parameters to generate the next term in the series.
+
+        ### Input:
+            - previous_values (list[np.ndarray]): List of previous values of the process.
+            - t (float): Current time step.
+
+        ### Output:
+            - An array (np.ndarray) of autoregression values for each path.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Unit_root
         """
+
         process_values = np.array(previous_values).T
         # Arguments validation
         if len(process_values)!=self.n_paths:
@@ -104,9 +123,16 @@ class DifferenceStationary:
 
 class TrendStationary:
     """
-    Trend stationary term for a discrete-time stochastic process.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Trend-stationary_process\n
+    ## Description
+    The Trend Stationary class handles a trend stationary term for a discrete-time stochastic process. This class models trends such as linear, quadratic, or exponential, which can revert to a deterministic trend over time.
+
+    ### Methods:
+    - get_stationary_trend
+
+    ## Links
+    - Wikipedia: https://en.wikipedia.org/wiki/Trend-stationary_process
     """
+
     def __init__(self, n_paths: int, trend_type: TrendStationaryTrendType=TrendStationaryTrendType.LINEAR,
                  trend_params: TrendStationaryParams=TrendStationaryParams(),
                  custom_trend: Union[CustomTrendStationaryFunction, None]=None) -> None:
@@ -135,12 +161,22 @@ class TrendStationary:
 
     def get_stationary_trend(self, t: float) -> np.ndarray:
         """
-        Get an array of trend-stationary trend values.\n
-        Returns a trend value for a given stationary trend type:
-            - Linear Trend (params: a, b): a*t + b + error_term
-            - Quadratic Trend (params: a, b): a*t**2 + b*t + c + error_term
-            - Exponential Trend (params: a, b): b * exp(a*t) * error_term
+        ## Description
+        Generates an array of trend values based on the specified trend type. It accounts for different trends like linear, quadratic, exponential, or a custom-defined trend.
+
+        ### Input:
+            - t (float): Current time step.
+
+        ### Output:
+            - An array (np.ndarray) representing the trend values for each path.
+
+        ### LaTeX Formula:
+            - Depends on the trend type. For Linear: a*t + b, for Quadratic: a*t^2 + b*t + c, for Exponential: b * exp(a*t).
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Trend-stationary_process
         """
+
         base_shape = np.ones(self.n_paths)
         t = float(t)
         # Resolve trend type
@@ -158,8 +194,14 @@ class TrendStationary:
 
 class StationaryError:
     """
-    Stationary error term for a discrete-time stochastic process.
+    ## Description
+    The StationaryError class represents a stationary error term for a discrete-time stochastic process. This error term can follow a Weiner process or be custom-defined, adding randomness to the process in a controlled manner.
+
+    ### Methods:
+    - weiner_process
+    - get_error
     """
+
     def __init__(self, n_paths: int, dt: float, error_type: StationaryErrorType=StationaryErrorType.WEINER, sigma: float=1.0,
                  custom_error: Union[Type[CustomError], None]=None) -> None:
         type_check(value=error_type, type_=StationaryErrorType, value_name="error_type")
@@ -183,17 +225,32 @@ class StationaryError:
             raise ValueError("The custom error function does not produce an array of length {} defined by n_paths.".format(self.n_paths))
         return custom_error
     
-    def weiner_process(self) -> np.ndarray:
+    def weiner_process(self) -> np.ndarray: #TODO defined twice
         """
-        Generate increments of the Weiner process.\n
-        Wikipedia: https://en.wikipedia.org/wiki/Wiener_process\n
+        ## Description
+        Generates increments of a Weiner process, representing a standard Gaussian white noise with variance determined by the 'sigma' parameter.
+
+        ### Output:
+            - An array (np.ndarray) of Weiner process increments.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Wiener_process
         """
+
         return (self.sigma**2) * self.dt * np.random.randn(self.n_paths)
     
     def get_error(self) -> np.ndarray:
         """
-        Get an array of simulated error values.
+        ## Description
+        Generates an array of error values based on the defined error type. The method supports a Weiner process or a custom error generation mechanism.
+
+        ### Output:
+            - An array (np.ndarray) representing the error values for each path.
+
+        ## Links
+            - Wikipedia: N/A
         """
+
         match self.error_type:
             case StationaryErrorType.WEINER:
                 return self.weiner_process()

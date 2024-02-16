@@ -8,12 +8,13 @@ from src.digifi.stochastic_processes.general import StochasticProcessInterface
 
 class FellerSquareRootProcessMethod(Enum):
     """
-    Types of Feller Square-Root Process.
+    ## Description
+    Enumeration class for different methods of simulating the Feller Square-Root Process.
     """
+
     EULER_MARUYAMA = 1
     ANALYTIC_EULER_MARUYAMA = 2
     EXACT = 3
-
 
 
 class ArithmeticBrownianMotion(StochasticProcessInterface):
@@ -36,8 +37,19 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
         
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Arithmetic Brownian Motion generated using the Euler-Maruyama method.
+        ## Description
+        Generates simulation paths for the Arithmetic Brownian Motion using the Euler-Maruyama method.
+
+        ### Output:
+            - An array (np.ndarray) of simulated paths following the Arithmetic Brownian Motion.
+
+        ### LaTeX Formula:
+            - dS_{t} = \mu dt + \sigma dW_{t}
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
+
         # Stochastic process
         dW = np.sqrt(self.dt)*np.random.randn(self.n_paths, self.n_steps)
         dS = self.mu*self.dt + self.sigma*dW
@@ -47,22 +59,58 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Arithmetci Brownian Motion.
+        ## Description
+        Calculates the expected path of the Arithmetic Brownian Motion
+
+        ### Output:
+            - Expected value of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = \mu t + S_0
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
+
         return self.mu*self.t + self.s_0
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Arithmetic Brownian Motion at each time step.
+        ## Description
+        Calculates the variance of the Arithmetic Brownian Motion at each time step.
+
+        ### Output:
+            - Variance of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - Var[S_t] = \sigma^2 t
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
+
         return self.t*(self.sigma**2)
     
     def get_auto_cov(self, index_t1: int, index_t2: int) -> np.ndarray:
         """
-        Auto-covariance of the Arithmetic Brownian Motion between times t1 and t2.
-        """
-        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])     
+        ## Description
+        Calculates the auto-covariance of the Arithmetic Brownian Motion between two time points.
 
+        ### Input:
+            - index_t1 (int): Index of the first time point.
+            - index_t2 (int): Index of the second time point.
+
+        ### Output:
+            - Auto-covariance of the process between times t1 and t2 (np.ndarray).
+
+        ### LaTeX Formula:
+            - \text{Cov}(S_{t1}, S_{t2}) = \sigma^2 \min(t1, t2)
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
+        """
+
+        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])     
 
 
 class GeometricBrownianMotion(StochasticProcessInterface):
@@ -86,8 +134,20 @@ class GeometricBrownianMotion(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Geometric Brownian Motion generated using the Euler-Maruyama method.
+        ## Description
+        Simulates paths of the Geometric Brownian Motion using the Euler-Maruyama method. This method provides an approximation of the continuous-time process.
+
+        ### Output:
+            - An array (np.ndarray) of simulated stock prices following the Geometric Brownian Motion for each path and time step.
+
+        ### LaTeX Formula:
+            - dS_{t} = \mu S_{t} dt + \sigma S_{t} dW_{t}
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
+
+
         # Stochastic process
         dW = np.sqrt(self.dt)*np.random.randn(self.n_paths, self.n_steps)
         dS = (self.mu-0.5*self.sigma**2)*self.dt + self.sigma*dW
@@ -98,16 +158,39 @@ class GeometricBrownianMotion(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Geometric Brownian Motion.
+        ## Description
+        Calculates the expected path of the Geometric Brownian Motion. This represents the mean trajectory of the stock price over time.
+
+        ### Output:
+            - Expected value of the stock price at each time step (np.ndarray), representing the mean trajectory.
+
+        ### LaTeX Formula:
+            - E[S_t] = S_0 e^{\mu t}
+            - S_0 is the initial stock price.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
+
         return self.s_0*np.exp(self.mu*self.t)
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Geometric Brownian Motion at each time step.
-        """
-        return (self.s_0**2)*np.exp(2*self.mu*self.t)*(np.exp(self.t*self.sigma**2)-1)
+        ## Description
+        Computes the variance of the stock price at each time step under the Geometric Brownian Motion model. This provides an indication of the variability or risk associated with the stock price.
 
+        ### Output:
+            - Variance of the stock price at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - \text{Var}[S_t] = (S_0^2) e^{2\mu t} (e^{\sigma^2 t} - 1)
+            - S_0 is the initial stock price.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
+        """
+
+        return (self.s_0**2)*np.exp(2*self.mu*self.t)*(np.exp(self.t*self.sigma**2)-1)
 
 
 class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
@@ -133,10 +216,23 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
     
     def get_paths(self, analytic_em: bool=False) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Ornsteain_uhlenbeck Process generated using Euler-Maruyama method.
-        Intakes an argument analytic_em with bool values. If True, then returns the simulation with the analytic 
-        moments for Euler-Maruyama; if False, then returns plain Euler-Maruyama simulation.
+        ## Description
+        Simulates paths of the Ornstein-Uhlenbeck Process using the Euler-Maruyama method.
+        This method can be adjusted to use either the standard numerical simulation or an analytic adjustment for Euler-Maruyama.
+
+        ### Input:
+            - analytic_em (bool): If True, uses the analytic moments for Euler-Maruyama; otherwise, uses plain Euler-Maruyama simulation.
+
+        ### Output:
+            - An array (np.ndarray) representing simulated paths of the process for each path and time step.
+
+        ### LaTeX Formula:
+            - dS_{t} = \alpha(\mu - S_{t}) dt + \sigma dW_{t}
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
         """
+
         # Stochastic process
         N = np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.s_0*np.ones((1, self.n_paths)), np.zeros((self.n_steps, self.n_paths))), axis=0)
@@ -154,16 +250,37 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Ornstein-Uhlenbeck Process.
+        ## Description
+        Calculates the expected path of the Ornstein-Uhlenbeck Process, showing the mean-reverting nature of the process over time.
+
+        ### Output:
+            - Expected value of the process at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = \mu + (S_0 - \mu) e^{-\alpha t} where S_0 is the initial value of the process.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
         """
+
         return self.mu + (self.s_0-self.mu)*np.exp(-self.alpha*self.t)
     
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Ornstein-Uhlenbeck Process at each time step.
+        ## Description
+        Computes the variance of the Ornstein-Uhlenbeck Process at each time step, providing insights into the variability around the mean.
+
+        ### Output:
+            - Variance of the process at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - \text{Var}[S_t] = \frac{\sigma^2}{2\alpha} (1 - e^{-2\alpha t})
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process
         """
+
         return (1-np.exp(-2*self.alpha*self.t))*(self.sigma**2)/(2*self.alpha)
-        
 
 
 class BrownianBridge(StochasticProcessInterface):
@@ -190,8 +307,21 @@ class BrownianBridge(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Brownian Bridge generated using the Euler-Maruyama method.
+        ## Description
+        Generates simulation paths for the Brownian Bridge using the Euler-Maruyama method. 
+        This method approximates the continuous-time process and ensures that the path starts at 'alpha' and ends at 'beta' at time T.
+
+        ### Output:
+            - An array (np.ndarray) of simulated paths following the Brownian Bridge for each path and time step.
+
+        ### LaTeX Formula:
+            - dS_{t} = ((\beta - \alpha)/(T - t)) dt + \sigma dW_{t}
+            - Where \sigma is the volatility and dW_{t} is the increment of a Wiener process.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge
         """
+
         # Stochastic process
         dW = np.sqrt(self.dt)*np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.alpha*np.ones((1, self.n_paths)),
@@ -202,16 +332,38 @@ class BrownianBridge(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Brownian Bridge.
+        ## Description
+        Calculates the expected path of the Brownian Bridge. It represents the expected value of the process at each time step, starting at 'alpha' and trending towards 'beta'.
+
+        ### Output:
+            - Expected value of the process at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = \alpha + (\beta - \alpha) \frac{t}{T}
+            - Represents a linear interpolation between the start and end points.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge
         """
+
         return self.alpha + (self.beta-self.alpha)/self.T*self.t
-    
+
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Brownian Bridge.
-        """
-        return self.t*(self.T-self.t)/self.T
+        ## Description
+        Computes the variance of the Brownian Bridge at each time step. This illustrates how the variability of the process decreases as it approaches the endpoint 'beta' at time T.
 
+        ### Output:
+            - Variance of the process at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - \text{Var}[S_t] = \frac{t(T-t)}{T} \sigma^2
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge
+        """
+
+        return self.t*(self.T-self.t)/self.T
 
 
 class FellerSquareRootProcess(StochasticProcessInterface):
@@ -240,11 +392,16 @@ class FellerSquareRootProcess(StochasticProcessInterface):
     
     def get_paths(self) -> np.ndarray[Any, np.ndarray]:
         """
-        Paths, S, of the Feller Square-Root Process generated using either Euler-Maruyama method or the exact method.
-        For Euler-Maruyama simulation, set method atribute to FellerSquareRootProcessMethod.EULER_MARUYAMA;
-        for Euler-Maruyama with analytic moments, set method atrinute to FellerSquareRootProcessMethod.ANALYTIC_EULER_MARUYAMA;
-        for exact solution, set it to FellerSquareRootProcessMethod.EXACT.
+        ## Description
+        Simulates paths of the Feller Square-Root Process using different methods: Euler-Maruyama, Analytic Euler-Maruyama, or Exact method, depending on the specified method in the process setup.
+
+        ### Output:
+            - An array (np.ndarray) of simulated paths of the process for each path and time step, following the chosen simulation method.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model
         """
+
         # Stochastic process
         N = np.random.randn(self.n_steps, self.n_paths)
         s = np.concatenate((self.s_0*np.ones((1, self.n_paths)), np.zeros((self.n_steps, self.n_paths))), axis=0)
@@ -269,13 +426,32 @@ class FellerSquareRootProcess(StochasticProcessInterface):
     
     def get_expectation(self) -> np.ndarray:
         """
-        Expected path, E[S], of the Feller Square-Root Process.
+        ## Description
+        Calculates the expected path of the Feller Square-Root Process, showing the mean-reverting nature over time towards the long-term mean \mu.
+
+        ### Output:
+            - Expected value of the process at each time step (np.ndarray).
+
+        ### LaTeX Formula:
+            - E[S_t] = \mu + (S_0 - \mu) e^{-\alpha t} where S_0 is the initial value of the process.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model
         """
+
         return self.mu + (self.s_0-self.mu)*np.exp(-self.alpha*self.t)
-    
+
     def get_variance(self) -> np.ndarray:
         """
-        Variance, Var[S], of the Feller Square-Root Process.
+        ## Description
+        Computes the variance of the Feller Square-Root Process at each time step, providing insights into the variability around the mean.
+
+        ### Output:
+            - Variance of the process at each time step (np.ndarray).
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Cox%E2%80%93Ingersoll%E2%80%93Ross_model
         """
+
         return ((self.sigma**2)*(np.exp(-self.alpha*self.t)-np.exp(-self.alpha*2*self.t))*self.s_0/self.alpha +
                 (self.sigma**2)*np.exp(-self.alpha*2*self.t)*(np.exp(self.alpha*self.t)-1)**2*self.mu/(2*self.alpha))
