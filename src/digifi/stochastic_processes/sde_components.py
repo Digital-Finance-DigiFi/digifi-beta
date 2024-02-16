@@ -11,10 +11,21 @@ from src.digifi.stochastic_processes.sde_components_utils import (SDEComponentFu
 
 class Drift:
     """
-    Customizable drift term for a discrete-time SDE of the stochastic process.\n
-    Creates a drift term of the form:
-        Drift = component_func(previous_values, t) * dt
+    ## Description
+    Represents the drift term in a discrete-time Stochastic Differential Equation (SDE).
+    The drift term defines the deterministic part of the process.
+
+    ### Input:
+        - n_paths (int): Number of simulation paths.
+        - dt (float): Time step increment.
+        - component_type (SDEComponentFunctionType): Type of the SDE component.
+        - component_params (SDEComponentFunctionParams): Parameters for the SDE component.
+        - custom_drift (Union[Type[CustomSDEComponentFunction], None]): Custom drift component.
+
+    ### LaTeX Formula:
+        - Drift = component_func(previous_values, t) \cdot dt
     """
+
     def __init__(self, n_paths: int, dt: float,
                  # Diffusion function parameters
                  component_type: SDEComponentFunctionType=SDEComponentFunctionType.LINEAR,
@@ -35,8 +46,25 @@ class Drift:
     
     def get_drift(self, previous_values: np.ndarray, t: float) -> np.ndarray:
         """
-        Get an array of drift values for n paths.
+        ## Description
+        Computes the drift term for each path in the stochastic process at a given time.
+
+        ### Input:
+            - previous_values (np.ndarray): The values of the stochastic process at the previous time step.
+            - t (float): Current time step.
+
+        ### Output:
+            - An array (np.ndarray) of drift values for each path at time t.
+
+        ### LaTeX Formula:
+            - Drift = component_func(previous_values, t) \cdot dt
+            - The exact formula depends on the specified component function.
+
+        ## Links
+            - Wikipedia: N/A
+            - Original Source: N/A
         """
+
         # Get the values of the component in front of the dt
         component_values = get_component_values(component_type=self.component_type, component_params=self.component_params,
                                                 stochastic_values=previous_values, t=t, n_paths=self.n_paths, dt=self.dt,
@@ -48,10 +76,23 @@ class Drift:
 
 class Diffusion:
     """
-    Customizable diffusion term for a discrete-time SDE of the stochastic process.\n
-    Generates a diffusion term:
-        Diffusion = component_func(previous_values, t) * noise_func
+    ## Description
+    Represents the diffusion term in a discrete-time SDE.
+    The diffusion term characterizes the stochastic part of the process.
+
+    ### Input:
+        - n_paths (int): Number of simulation paths.
+        - dt (float): Time step increment.
+        - component_type (SDEComponentFunctionType): Type of the SDE component.
+        - component_params (SDEComponentFunctionParams): Parameters for the SDE component.
+        - custom_diffusion (Union[Type[CustomSDEComponentFunction], None]): Custom diffusion component.
+        - noise_type (NoiseType): Type of the noise component.
+        - custom_noise (Union[Type[CustomNoise], None]): Custom noise component.
+
+    ### LaTeX Formula:
+        - Diffusion = component_func(previous_values, t) \cdot noise_func
     """
+
     def __init__(self, n_paths: int, dt: float,
                  # Diffusion function parameters
                  component_type: SDEComponentFunctionType=SDEComponentFunctionType.LINEAR,
@@ -94,23 +135,54 @@ class Diffusion:
     
     def standard_white_noise(self) -> np.ndarray:
         """
-        \\mathcal{N}(0, 1)\n
-        Generate Gaussian white noise with variance 1.\n
+        ## Description
+        Generates standard Gaussian white noise with mean 0 and variance 1.
+
+        ### Output:
+            - An array (np.ndarray) of Gaussian white noise values.
+
+        ### LaTeX Formula:
+            - \mathcal{N}(0, 1)
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/White_noise
         """
+
         return np.random.randn(self.n_paths)
     
     def weiner_process(self) -> np.ndarray:
         """
-        dW_{t} \\approx \\sqrt{dt}*\\mathcal{N}(0, 1)\n
-        Generate the Weiner process.\n
-        Wikipedia: https://en.wikipedia.org/wiki/Wiener_process\n
+        ## Description
+        Generates increments of the Wiener process, suitable for simulating Brownian motion.
+
+        ### Output:
+            - An array (np.ndarray) of Wiener process increments.
+
+        ### LaTeX Formula:
+            - dW_t \approx \sqrt{dt} \cdot \mathcal{N}(0, 1) where dt is the time step increment.
+
+        ## Links
+            - Wikipedia: https://en.wikipedia.org/wiki/Wiener_process
         """
+
         return np.sqrt(self.dt) * self.standard_white_noise()
     
     def get_diffusion(self, previous_values: np.ndarray, t: float) -> np.ndarray:
         """
-        Get an array of simulated diffusion values.
+        ## Description
+        Computes the diffusion term for each path in the stochastic process at a given time.
+
+        ### Input:
+            - previous_values (np.ndarray): The values of the stochastic process at the previous time step.
+            - t (float): Current time step.
+
+        ### Output:
+            - An array (np.ndarray) of diffusion values for each path at time t.
+
+        ### LaTeX Formula:
+            - Diffusion = component_func(previous_values, t) \cdot noise_func
         """
+
         # Get the values of the component in front of the noise
         component_values = get_component_values(component_type=self.component_type, component_params=self.component_params,
                                                 stochastic_values=previous_values, t=t, n_paths=self.n_paths, dt=self.dt,
@@ -128,8 +200,17 @@ class Diffusion:
 
 class Jump:
     """
-    Customizable jump term for a discrete-time SDE of the stochastic process.
+    ## Description
+    Represents the jump term in a discrete-time SDE. The jump term accounts for sudden, discontinuous changes in the value of the process.
+
+    ### Input:
+        - n_paths (int): Number of simulation paths.
+        - dt (float): Time step increment.
+        - jump_type (JumpType): Type of the jump component.
+        - jump_params (Union[CompoundPoissonNormalParams, CompoundPoissonBilateralParams, None]): Parameters for the jump component.
+        - custom_jump (Union[Type[CustomJump], None]): Custom jump component.
     """
+
     def __init__(self, n_paths: int, dt: float, jump_type: JumpType=JumpType.NO_JUMPS,
                  jump_params: Union[CompoundPoissonNormalParams, CompoundPoissonBilateralParams, None]=None,
                  custom_jump: Union[Type[CustomJump], None]=None) -> None:
@@ -157,9 +238,20 @@ class Jump:
     
     def compound_poisson_normal(self, params: CompoundPoissonNormalParams) -> np.ndarray:
         """
-        \\text{Jumps Frequency} = Pois(\\lambda dt)\n
-        \\{Jumps Distribution} = (\\mu_{j} * \\text{Jumps Frequency}) + (\\sigma_{j} * \\text{Jumps Frequency} * \mathcal{N}(0,1))\n
+        ## Description
+        Generates jumps according to a compound Poisson process with normally distributed jump sizes.
+
+        ### Input:
+            - params (CompoundPoissonNormalParams): Parameters of the compound Poisson normal jump process.
+
+        ### Output:
+            - An array (np.ndarray) of jump values.
+
+        ### LaTeX Formula:
+            - Jumps = \text{Pois}(\lambda \cdot dt) \cdot (\mu_j + \sigma_j \cdot \sqrt{\text{Jumps}} \cdot \mathcal{N}(0,1)) 
+              where \lambda is the jump rate, \mu_j is the mean jump size, and \sigma_j is the jump size volatility.
         """
+
         # Frequency of jumps
         dP = np.random.poisson(params.lambda_j*float(self.dt), self.n_paths)
         # Distribution of jumps
@@ -168,6 +260,16 @@ class Jump:
     
     def compound_poisson_bilateral(self, params: CompoundPoissonBilateralParams) -> np.ndarray:
         """
+        ## Description
+        Generates jumps according to a compound Poisson process with bilateral exponential jump sizes.
+
+        ### Input:
+            - params (CompoundPoissonBilateralParams): Parameters of the compound Poisson bilateral jump process.
+
+        ### Output:
+            - An array (np.ndarray) of jump values.
+        
+        ### LaTeX Formula:
         \\text{Jumps Frequency} = Pois(\\lambda dt)\n
         \\text{Assymetric Double Exponential RV} = \mathbb{1}_{p\\leq U(0,1)}*(-\\frac{1}{\\eta_{u}} * ln(\\frac{1-U(0,1)}{p})) +\n
             + \mathbb{1}_{U(0,1)<p}*(\\frac{1}{\\eta_{d}} * ln(\\frac{U(0,1)}{1-p}))\n
@@ -189,8 +291,13 @@ class Jump:
 
     def get_jumps(self) -> np.ndarray:
         """
-        Get an array of simulated jump values.
+        ## Description
+        Computes the jump term for each path in the stochastic process at a given time.
+
+        ### Output:
+            - An array (np.ndarray) of jump values for each path at time t.
         """
+
         match self.jump_type:
             case JumpType.NO_JUMPS:
                 return np.zeros(self.n_paths)
