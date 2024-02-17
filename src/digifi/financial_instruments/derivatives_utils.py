@@ -279,7 +279,7 @@ class CustomPayoff(metaclass=abc.ABCMeta):
 
 class LongCallPayoff(CustomPayoff):
     """
-    ## Descsription
+    ## Description
     Helper class to define the long call payoff in library functions and methods.
     """
     def __init__(self, k: float) -> None:

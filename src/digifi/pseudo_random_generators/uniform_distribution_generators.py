@@ -13,11 +13,12 @@ class LinearCongruentialPseudoRandomNumberGenerator(PseudoRandomGeneratorInterfa
         - M: Mod of the linear congruential generator
         - a: Multiplierof the linear congruential generator
         - b: Increment of the linear congruential generator
+
     ### LaTeX Formula:
         - N_{i} = (aN_{i-1}+b) mod M
+
     ## Links
         - Wikipedia: https://en.wikipedia.org/wiki/Linear_congruential_generator
-        - Original Source: N/A
     """
     def __init__(self, seed: int=12_345, sample_size: int=10_000, M: int=244_944, a: int=1_597, b: int=51_749) -> None:
         if seed<0:
@@ -34,6 +35,7 @@ class LinearCongruentialPseudoRandomNumberGenerator(PseudoRandomGeneratorInterfa
         """
         ## Description
         Array of pseudo-random generated numbers based on Linear Congruential Generator.
+
         ### Output:
             - Array pseudo-random numberss following Uniform distribution
         """
@@ -57,11 +59,12 @@ class FibonacciPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
         - M: Mod of the linear congruential generator
         - a: Multiplierof the linear congruential generator
         - b: Increment of the linear congruential generator
+
     ### LaTeX Formula:
         - N_{i} = (N_{i-nu}-N_{i-mu}) mod M
+
     ## Links
         - Wikipedia: https://en.wikipedia.org/wiki/Lagged_Fibonacci_generator
-        - Original Source: N/A
     """
     def __init__(self, mu: int=5, nu: int=17, seed: int=12_345, sample_size: int=10_000, M: int=714_025, a: int=1_366, b: int=150_889) -> None:
         if seed<0:
@@ -80,7 +83,7 @@ class FibonacciPseudoRandomNumberGenerator(PseudoRandomGeneratorInterface):
         """
         ## Description
         Array of pseudo-random generated numbers based on Fibonacci Generator.
-        
+
         ### Output:
             - Array pseudo-random numberss following Uniform distribution
         """

@@ -110,7 +110,7 @@ class ArithmeticBrownianMotion(StochasticProcessInterface):
             - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
         """
 
-        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])     
+        return (self.sigma**2)*min(self.t[int(index_t1)], self.t[int(index_t2)])
 
 
 class GeometricBrownianMotion(StochasticProcessInterface):
@@ -165,8 +165,7 @@ class GeometricBrownianMotion(StochasticProcessInterface):
             - Expected value of the stock price at each time step (np.ndarray), representing the mean trajectory.
 
         ### LaTeX Formula:
-            - E[S_t] = S_0 e^{\mu t}
-            - S_0 is the initial stock price.
+            - E[S_t] = S_0 e^{\mu t} where S_0 is the initial stock price.
 
         ## Links
             - Wikipedia: https://en.wikipedia.org/wiki/Geometric_Brownian_motion
@@ -213,7 +212,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
         self.dt = T/n_steps
         self.t = np.arange(0, T+self.dt, self.dt)
         self.s_0 = float(s_0)
-    
+
     def get_paths(self, analytic_em: bool=False) -> np.ndarray[Any, np.ndarray]:
         """
         ## Description
@@ -247,7 +246,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
             for i in range(0, self.n_steps):
                 s[i+1,:] = s[i,:] + self.alpha*(self.mu-s[i,:])*self.dt + std*N[i,:]
         return s.transpose()
-    
+
     def get_expectation(self) -> np.ndarray:
         """
         ## Description
@@ -264,7 +263,7 @@ class OrnsteinUhlenbeckProcess(StochasticProcessInterface):
         """
 
         return self.mu + (self.s_0-self.mu)*np.exp(-self.alpha*self.t)
-    
+
     def get_variance(self) -> np.ndarray:
         """
         ## Description
@@ -293,7 +292,6 @@ class BrownianBridge(StochasticProcessInterface):
     Outputs:
     ## Links
     - Wikipedia: https://en.wikipedia.org/wiki/Brownian_bridge
-    - Original Source: N/A
     """
     def __init__(self, alpha: float=1.0, beta: float=2.0, sigma: float=0.5, n_paths: int=100, n_steps: int=200, T: float=1.0) -> None:
         self.alpha = float(alpha)

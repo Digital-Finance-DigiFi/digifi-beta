@@ -202,9 +202,6 @@ def get_component_values(component_type: SDEComponentFunctionType, component_par
     ### LaTeX Formula:
         - Specific to the chosen SDE component type.
 
-    ## Links
-        - Wikipedia: N/A
-        - Original Source: N/A
     """
 
     # Arguments validation

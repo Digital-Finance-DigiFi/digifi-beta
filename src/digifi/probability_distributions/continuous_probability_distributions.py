@@ -54,7 +54,6 @@ class ContinuousUniformDistribution(ProbabilityDistributionInterface):
         """
         ## Description
         Computes the Cumulative Distribution Function (CDF) for a continuous uniform distribution.
-        
 
         ### Input:
             - x (np.ndarray): Values at which to calculate the CDF.
@@ -160,7 +159,7 @@ class NormalDistribution(ProbabilityDistributionInterface):
         ### Output:
             - PDF values (np.ndarray) at the given x.
 
-        ### Links: 
+        ### Links:
             - https://en.wikipedia.org/wiki/Normal_distribution#Probability_density_function
         """
 
@@ -361,7 +360,7 @@ class ExponentialDistribution(ProbabilityDistributionInterface):
 class LaplaceDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of Laplace distribution.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Laplace_distribution\n
+    Wikipedia: https://en.wikipedia.org/wiki/Laplace_distribution \n
 
     ### Input:
     - mu (float): Location parameter, which is the peak of the distribution.
@@ -382,7 +381,7 @@ class LaplaceDistribution(ProbabilityDistributionInterface):
         self.skewness = 0
         self.excess_kurtosis = 3
         self.entropy = np.log(2*b*np.e)
-    
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         ## Description
@@ -411,14 +410,14 @@ class LaplaceDistribution(ProbabilityDistributionInterface):
 
         ### Output:
             - CDF values (np.ndarray) at the given x.
-        
+
         ### Links:
             - https://en.wikipedia.org/wiki/Laplace_distribution#Cumulative_distribution_function
         """
 
         type_check(value=x, type_=np.ndarray, value_name="x")
         return np.where(x<=self.mu, 0.5*np.exp((x-self.mu)/self.b), 1-0.5*np.exp(-(x-self.mu)/self.b))
-    
+
     def inverse_cdf(self, p: np.ndarray) -> np.ndarray:
         """
         ## Description

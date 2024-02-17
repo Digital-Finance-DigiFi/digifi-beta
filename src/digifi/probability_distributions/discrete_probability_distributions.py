@@ -7,11 +7,13 @@ from src.digifi.probability_distributions.general import (ProbabilityDistributio
 from src.digifi.probability_distributions.continuous_probability_distributions import NormalDistribution
 
 
+#Shouldn't these be PMF instead of PDF?
+
 
 class BernoulliDistribution(ProbabilityDistributionInterface):
     """
     Methods and properties of Bernoulli distribution.\n
-    Wikipedia: https://en.wikipedia.org/wiki/Bernoulli_distribution\n
+    Wikipedia: https://en.wikipedia.org/wiki/Bernoulli_distribution \n
     """
     def __init__(self, p: float) -> None:
         p = float(p)

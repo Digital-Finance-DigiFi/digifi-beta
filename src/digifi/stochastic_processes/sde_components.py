@@ -59,10 +59,6 @@ class Drift:
         ### LaTeX Formula:
             - Drift = component_func(previous_values, t) \cdot dt
             - The exact formula depends on the specified component function.
-
-        ## Links
-            - Wikipedia: N/A
-            - Original Source: N/A
         """
 
         # Get the values of the component in front of the dt

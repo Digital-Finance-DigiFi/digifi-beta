@@ -64,7 +64,9 @@ class ProbabilityDistributionInterface(metaclass=abc.ABCMeta):
 def skewness(array: np.ndarray) -> float:
     """
     ## Description
-    Calculates the skewness of a given data array. Skewness measures the asymmetry of the probability distribution of a real-valued random variable about its mean. The skewness value can be positive, zero, negative, or undefined. Fisher-Pearson coefficient of skewness is used.
+    Calculates the skewness of a given data array. Skewness measures the asymmetry of the probability distribution of a real-valued random variable about its mean. 
+    The skewness value can be positive, zero, negative, or undefined. 
+    Fisher-Pearson coefficient of skewness is used.
 
     ### Input:
         - array (np.ndarray): A numpy array for which the skewness is to be calculated.
@@ -88,7 +90,9 @@ def skewness(array: np.ndarray) -> float:
 def kurtosis(array: np.ndarray) -> float:
     """
     ## Description
-    Computes the kurtosis of a given data array. Kurtosis is a measure of the "tailedness" of the probability distribution of a real-valued random variable. Higher kurtosis implies a heavier tail. The calculation here does not subtract 3, hence this is the 'excess kurtosis'.
+    Computes the kurtosis of a given data array. Kurtosis is a measure of the "tailedness" of the probability distribution of a real-valued random variable. 
+    Higher kurtosis implies a heavier tail. 
+    The calculation here does not subtract 3, hence this is the 'excess kurtosis'.
 
     ### Input:
         - array (np.ndarray): A numpy array for which the kurtosis is to be calculated.
