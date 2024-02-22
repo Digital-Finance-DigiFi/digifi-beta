@@ -1,5 +1,5 @@
 # DigiFi
-General utility finance library. This package provides basic functions and algorithms used in finance.
+General-purpose financial library. This package provides basic functions and algorithms used in finance.
 
 ## Disclaimer
 Note that this package is not intended for commercial use, and the developers of the package do not accept any responsibility or liability for the accuracy or completeness of the code or the information provided.
