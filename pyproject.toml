@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "digifi"
+version = "1.0.2"
+authors = [
+    { name="Rem Sadykhov" },
+    { name="Berke Muftuoglu" },
+]
+description = "General-purpose financial library."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Development Status :: 4 - Beta",
+]
+
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.11",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Digital-Finance-DigiFi/digifi-beta"
+"Bug Tracker" = "https://github.com/Digital-Finance-DigiFi/digifi-beta/issues"
