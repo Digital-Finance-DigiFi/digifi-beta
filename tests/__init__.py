@@ -2,7 +2,7 @@ from .digifi.general import (get_test_stock_data, get_test_portfolio_data, get_t
 
 from .digifi.test_corporate_finance import (TestCAPM)
 
-from .digifi.test_financial_instruments import (TestOption, TestStock)
+from .digifi.test_financial_instruments import (TestBond, TestOption, TestStock)
 
 from .digifi.test_lattice_based_models import (TestBrownianMotionBinomialModel, TestBrownianMotionTrinomialModel)
 

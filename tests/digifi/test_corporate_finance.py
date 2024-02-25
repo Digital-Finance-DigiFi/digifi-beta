@@ -17,5 +17,5 @@ class TestCAPM:
         self.capm_params = capm_params
         self.capm = dgf.CAPM(capm_params=capm_params)
     
-    def integration_test(self) -> dict:
+    def integration_test_linear_regression_train(self) -> dict:
         return self.capm.linear_regression_train(asset_returns=self.asset_returns)

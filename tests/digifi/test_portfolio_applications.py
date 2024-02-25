@@ -13,10 +13,10 @@ class TestRiskMeasures:
         self.alpha = 0.05
         self.returns_distribution = dgf.NormalDistribution(mu=0.0, sigma=0.0264)
     
-    def unit_test_value_at_risk(self) -> float:
+    def integration_test_value_at_risk(self) -> float:
         return dgf.RiskMeasures().value_at_risk(alpha=self.alpha, returns_distribution=self.returns_distribution)
     
-    def unit_test_expected_shortfall(self) -> float:
+    def integration_test_expected_shortfall(self) -> float:
         return dgf.RiskMeasures().expected_shortfall(alpha=self.alpha, returns_distribution=self.returns_distribution)
 
 
@@ -26,7 +26,7 @@ class TestPortfolio:
     ## Description
     Test Portfolio class.
     """
-    def integration_test(self) -> dict[str, dict]:
+    def integration_test_efficient_frontier(self) -> dict[str, dict]:
         # Sample data
         data = dgf_tests.get_test_portfolio_data()
         stock_list = list(data.keys())
@@ -49,7 +49,7 @@ class TestInstrumentsPortfolio:
     ## Description
     Test InstrumentsPortfolio class.
     """
-    def integration_test(self) -> dict[str, dict]:
+    def integration_test_efficient_frontier(self) -> dict[str, dict]:
         n_steps = 100
         T = 5.0
         r = 0.02

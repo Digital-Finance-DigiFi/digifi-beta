@@ -3,6 +3,22 @@ import digifi as dgf
 
 
 
+class TestBond:
+    """
+    ## Description
+    Test Bond class.
+    """
+    def __init__(self) -> None:
+        bond_struct = dgf.BondStruct(bond_type=dgf.BondType.ANNUITY_BOND, principal=100.0, coupon_rate=0.05, discount_rate=0.04,
+                                     maturity=3.0, initial_price=98.0)
+        self.bond_struct = bond_struct
+        self.bond = dgf.Bond(bond_struct=bond_struct)
+    
+    def integration_test_present_value(self) -> float:
+        return self.bond.present_value()
+
+
+
 class TestOption:
     """
     ## Description
@@ -15,10 +31,10 @@ class TestOption:
         self.option_struct = option_struct
         self.option = dgf.Option(option_struct=option_struct, option_pricing_method=dgf.OptionPricingMethod.BINOMIAL, payoff=None)
     
-    def unit_test_present_value(self) -> float:
+    def integration_test_present_value(self) -> float:
         return self.option.present_value(lattice_model_n_steps=50)
     
-    def unit_test_present_value_surface(self) -> dict:
+    def integration_test_present_value_surface(self) -> dict:
         return self.option.present_value_surface(start_price=20.0, stop_price=80.0, n_prices=100, n_timesteps=30, lattice_model_n_steps=20)
 
 
@@ -35,7 +51,7 @@ class TestStock:
         self.stock_struct = stock_struct
         self.stock = dgf.Stock(stock_struct=stock_struct)
     
-    def unit_test_present_value(self, method: dgf.StockValuationType) -> float:
+    def integration_test_present_value(self, method: dgf.StockValuationType) -> float:
         dgf.type_check(value=method, type_=dgf.StockValuationType, value_name="method")
         expected_dividend = 3.0
         pe, pb, ev_to_ebitda = 11.0, 3.0, 6.0

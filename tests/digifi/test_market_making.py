@@ -7,7 +7,7 @@ class TestSimpleAMM:
     ## Description
     Test SimpleAMM class.
     """
-    def integration_test(self) -> dict[str, float]:
+    def integration_test_make_transaction(self) -> dict[str, float]:
         # Inputs definition
         token_1 = dgf.AMMToken(identifier="BTC", supply=10.0, fee_lower_bound=0.0, fee_upper_bound=0.03)
         token_2 = dgf.AMMToken(identifier="ETH", supply=1_000.0, fee_lower_bound=0.0, fee_upper_bound=0.03)

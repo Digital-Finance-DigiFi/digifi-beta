@@ -47,7 +47,7 @@ class BondStruct(DataClassValidation):
     initial_price: float = 0.0
     compounding_type: CompoundingType = CompoundingType.PERIODIC
     compounding_frequency: int = 1
-    coupon_growth_rate: float = 0.0,
+    coupon_growth_rate: float = 0.0
     inflation_rate: float = 0.0
     first_coupon_time: float = 1.0
 
@@ -63,8 +63,6 @@ class BondInterface(metaclass=abc.ABCMeta):
     def __subclasshook__(cls, subclass) -> bool:
         return (hasattr(subclass, "yield_to_maturity") and
                 callable(subclass.yield_to_maturity) and
-                hasattr(subclass, "promised_yield") and
-                callable(subclass.promised_yield) and
                 hasattr(subclass, "zero_rate") and
                 callable(subclass.zero_rate) and
                 hasattr(subclass, "par_yield") and
@@ -83,14 +81,6 @@ class BondInterface(metaclass=abc.ABCMeta):
         """
         ## Description
         Calculate yield to maturity.
-        """
-        raise NotImplementedError
-    
-    @abc.abstractmethod
-    def promised_yield(self) -> float:
-        """
-        ## Description
-        Calculate promised yield.
         """
         raise NotImplementedError
     
